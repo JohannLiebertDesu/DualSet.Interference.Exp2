@@ -12,14 +12,17 @@ setCSS();
 
 export const expInfo = {
   // settings for the experiment
-  TITLE: "the_name_of_your_experiment",
+  TITLE: "DualSet.Interference.Exp1",
   LANG: "en", // the default language of the experiment
 
-  // design of the experiment
-  DESIGN:{
-    nTRIALS: 1, // number of experiment trials for each condition
-    nBLOCKS: 4, // number of blocks
-    CONDITIONS: [5, 6, 7, 8],
+  DESIGN: {
+    nBlocks: 4, // number of blocks
+    nTrialsPerBlock: 24, // number of total trials in a block
+    itemTypes: ["dot", "clock"],
+    conditions: [2, 4, 6, 8],
+    get nTrialsPerCondition() {
+      return this.nTrialsPerBlock / this.conditions.length / this.itemTypes.length;
+    }, // number of experiment trials for each condition
   },
   
   // settings for each trial

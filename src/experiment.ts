@@ -1,6 +1,6 @@
 /**
  * @title DualSet.Interference.Exp1
- * @description Systematically varying the combination types and numbers of 2 sets that need to be memorized, including color patches and orientations. Variations include screen side, mixing or separating the qualitatively different items. Each trial concludes with the reproduction of 2 items.
+ * @description Systematically varying the combination possibilities and numbers of 2 sets that need to be memorized, including color patches and orientations. Variations include screen side, mixing or separating the qualitatively different items. Each trial concludes with the reproduction of 2 items.
  * @author Chenyu Li and Noah Rischert
  * @version 0.2.1
  *
@@ -13,14 +13,21 @@ import "../styles/main.scss";
 
 // jsPsych official plugin
 import preload from "@jspsych/plugin-preload";
+import psychophysics from "@kurokida/jspsych-psychophysics";
 
 // Global variables
 import { jsPsych } from "./jsp";
+import { expInfo } from "./settings";
+import { random } from "@coglabuzh/webpsy.js";
 
 // screens
 import { welcome_screen } from "./instructions/welcome";
 import { consent_screen, notice_screen } from "./instructions/consent";
 import { browser_screen } from "./instructions/browserCheck";
+
+// trials
+import { createNewTrial } from "./trials/trialProcess";
+
 
 /**
  * This function will be executed by jsPsych Builder and is expected to run the jsPsych experiment
@@ -51,6 +58,27 @@ export async function run({
   /************************************** Practice **************************************/
 
   /************************************** Experiment **************************************/
+  const experimentTrials = {
+    timeline: [],
+    repetitions: 1,
+  };
+  
+  for (const itemType of expInfo.DESIGN.itemTypes) {
+    for (const condition of expInfo.DESIGN.conditions) {
+      for (let i = 0; i < expInfo.DESIGN.nTrialsPerCondition; i++) {
+        experimentTrials.timeline.push({
+          type: psychophysics,
+          stimuli: createNewTrial(condition, itemType),
+          choices: expInfo.KEYS.CONTINUE,
+          response_ends_trial: true,
+          trial_duration: condition * 100,
+        });
+      }
+    }
+  }
+  
+  // Randomize the order of the trials
+  experimentTrials.timeline = random.shuffle(experimentTrials.timeline);
 
   /************************************** Procedure **************************************/
 
@@ -62,6 +90,8 @@ export async function run({
   timeline.push(consent_screen);
   timeline.push(notice_screen);
   timeline.push(browser_screen);
+  timeline.push(experimentTrials);
+
 
   await jsPsych.run(timeline);
 
