@@ -1,7 +1,7 @@
 /**
- * @title The name of the task
- * @description A short description of the task
- * @author Chenyu Li and Hannah (Dames) Tschannen
+ * @title DualSet.Interference.Exp1
+ * @description Systematically varying the combination types and numbers of 2 sets that need to be memorized, including color patches and orientations. Variations include screen side, mixing or separating the qualitatively different items. Each trial concludes with the reproduction of 2 items.
+ * @author Chenyu Li and Noah Rischert
  * @version 0.2.1
  *
  *
