@@ -58,12 +58,23 @@ export async function run({
   /************************************** Practice **************************************/
 
   /************************************** Experiment **************************************/
-  const experimentTrials = {
+  interface TrialObject {
+    type: typeof psychophysics;
+    stimuli: any[];
+    choices: string[];
+    response_ends_trial: boolean;
+    trial_duration: number;
+  }
+  
+  const experimentTrials: {
+    timeline: TrialObject[];
+    repetitions: number;
+  } = {
     timeline: [],
     repetitions: 1,
   };
   
-  for (const itemType of expInfo.DESIGN.itemTypes) {
+  for (const itemType of expInfo.DESIGN.itemTypes as ("dot" | "clock")[]) {
     for (const condition of expInfo.DESIGN.conditions) {
       for (let i = 0; i < expInfo.DESIGN.nTrialsPerCondition; i++) {
         experimentTrials.timeline.push({
@@ -77,9 +88,10 @@ export async function run({
     }
   }
   
+  
   // Randomize the order of the trials
-  experimentTrials.timeline = random.shuffle(experimentTrials.timeline);
-
+  experimentTrials.timeline = [...experimentTrials.timeline].sort(() => Math.random() - 0.5);
+ 
   /************************************** Procedure **************************************/
 
 
