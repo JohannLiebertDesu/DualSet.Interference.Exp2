@@ -16,19 +16,24 @@ export const expInfo = {
   LANG: "en", // the default language of the experiment
 
   DESIGN: {
-    nBlocks: 4, // number of blocks
-    nTrialsPerBlock: 24, // number of total trials in a block
+    nBlocks: 1, // number of blocks
+    nTrialsPerBlock: 4, // number of total trials in a block
     itemTypes: ["dot", "clock"],
-    conditions: [2, 4, 6, 8],
+    setSize: [3, 6],
     get nTrialsPerCondition() {
-      return this.nTrialsPerBlock / this.conditions.length / this.itemTypes.length;
+      return this.nTrialsPerBlock / this.setSize.length / this.itemTypes.length;
     }, // number of experiment trials for each condition
+    DualSet: false,
+    OrientationGroup: false,
   },
   
   // settings for each trial
   TIMING: {
-    START: 10 * 1000, // time for the countdown before a new trial starts
-    BREAK: 30, // break duration in seconds
+    EncodingDurations: {
+      short: 1000,
+      medium: 2000,
+      long: 2300,
+    },
   },
 
   // when using Prolific, you can set customized completion codes for different situations

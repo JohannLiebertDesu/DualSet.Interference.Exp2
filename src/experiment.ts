@@ -54,57 +54,91 @@ export async function run({
 
   /************************************** Instruction **************************************/
 
-
   /************************************** Practice **************************************/
 
   /************************************** Experiment **************************************/
-  interface TrialObject {
-    type: typeof psychophysics;
-    stimuli: any[];
-    choices: string[];
-    response_ends_trial: boolean;
-    trial_duration: number;
-  }
+
+  var singleSetTrial = {
+    timeline: [
+        {
+            type: psychophysics, // Adding a psychophysics trial
+            stimuli: [
+                {
+                    obj_type: 'circle',
+                    startX: 250,
+                    startY: 250,
+                    radius: 20,
+                    line_color: '#000000',
+                    fill_color: jsPsych.timelineVariable('color'), // Use variable for color
+                }
+              ],
+              choices: "NO_KEYS",
+              trial_duration: 1000,
+              post_trial_gap: 2000
+        },
+    ],
+    timeline_variables: [
+        { face: 'person-1.jpg', name: 'Alex', color: '#FF0000' },
+        { face: 'person-2.jpg', name: 'Beth', color: '#00FF00' },
+        { face: 'person-3.jpg', name: 'Chad', color: '#0000FF' },
+        { face: 'person-4.jpg', name: 'Dave', color: '#FFFF00' }
+    ]
+};
+
+  // // Create an object to hold the experiment trials
+  // const experiment_line:any[] = [];
   
-  const experimentTrials: {
-    timeline: TrialObject[];
-    repetitions: number;
-  } = {
-    timeline: [],
-    repetitions: 1,
-  };
+  // Generate experiment trials based on the design parameters (foreach loop)
+  // foreach (let itemType of expInfo.DESIGN.itemTypes) {
+  // for (let itemType of expInfo.DESIGN.itemTypes) {
+  //   for (let condition of expInfo.DESIGN.conditions) {
+  //     for (let i = 0; i < expInfo.DESIGN.nTrialsPerCondition; i++) {
+  //       let presentationTime = condition * 100; // Calculate the presentation time based on the condition
+  //       let encodingDuration:number = 0;
   
-  for (const itemType of expInfo.DESIGN.itemTypes as ("dot" | "clock")[]) {
-    for (const condition of expInfo.DESIGN.conditions) {
-      for (let i = 0; i < expInfo.DESIGN.nTrialsPerCondition; i++) {
-        experimentTrials.timeline.push({
-          type: psychophysics,
-          stimuli: createNewTrial(condition, itemType),
-          choices: expInfo.KEYS.CONTINUE,
-          response_ends_trial: true,
-          trial_duration: condition * 100,
-        });
-      }
-    }
-  }
+  //       if (!expInfo.DESIGN.DualSet) {
+  //         if (expInfo.DESIGN.OrientationGroup) {
+  //           // Set the encoding duration based on the item type for the orientation group (i can use objects)
+  //           encodingDuration = itemType === "clock" ? expInfo.TIMING.EncodingDurations.long : expInfo.TIMING.EncodingDurations.short;
+  //         } else {
+  //           // Set the encoding duration based on the item type for the non-orientation group
+  //           encodingDuration = itemType === "dot" ? expInfo.TIMING.EncodingDurations.long : expInfo.TIMING.EncodingDurations.short;
+  //         }
+  //       } else {
+  //         // Set the encoding duration to medium for DualSet trials
+  //         encodingDuration = expInfo.TIMING.EncodingDurations.medium;
+  //       }
   
+  //       // Create a new trial object and add it to the experiment timeline
+  //       let trial_screen = {
+  //         type: psychophysics,
+  //         stimuli: createNewTrial(condition, itemType),
+  //         choices: expInfo.KEYS.CONTINUE,
+  //         response_ends_trial: false, // Change this to false to prevent the trial from ending on response
+  //         trial_duration: presentationTime,
+  //         post_trial_gap: encodingDuration, // Add the encoding duration as the post-trial gap
+  //       }
+
+  //       experiment_line.push(trial_screen);
+  //     }
+  //   }
+  // }
   
-  // Randomize the order of the trials
-  experimentTrials.timeline = [...experimentTrials.timeline].sort(() => Math.random() - 0.5);
+  // Randomize the order of the trials (commented out)
+  // experimentTrials.timeline = [...experimentTrials.timeline].sort(() => Math.random() - 0.5);
  
   /************************************** Procedure **************************************/
 
-
-  // Push all the screen slides into timeline
+  // Push all the screen slides into the timeline
   // When you want to test the experiment, you can easily comment out the screens you don't want
   timeline.push(preload_screen);
   timeline.push(welcome_screen);
   timeline.push(consent_screen);
   timeline.push(notice_screen);
   timeline.push(browser_screen);
-  timeline.push(experimentTrials);
+  // timeline.push(experiment_line);
 
-
+  // Run the experiment timeline
   await jsPsych.run(timeline);
 
   // Return the jsPsych instance so jsPsych Builder can access the experiment results (remove this
