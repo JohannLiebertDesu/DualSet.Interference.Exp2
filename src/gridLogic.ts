@@ -1,3 +1,9 @@
+/**
+ * Creates a grid for placing stimuli with specified columns and rows.
+ * Marks the border and the middle column cells as occupied.
+ * @return An array of GridCell objects.
+ */
+
 import { varSystem, expInfo } from "./settings"; // import the variables from settings
 
 // Define a few variables
@@ -6,6 +12,10 @@ const screenHeight = window.screen.height; // Get the screen height
 
 const numColumns = 11; // Set the width of the grid
 const numRows = 6; // Set the height of the grid
+
+const ADJACENCY_LIMIT = 2; // Set the adjacency limit
+const DIAGONAL_ADJACENCY = 1; // Set the diagonal adjacency
+
 
 // Calculate the cell size based on the screen dimensions and grid size
 function calculateCellSize(screenWidth, screenHeight, numColumns, numRows) {
@@ -25,14 +35,17 @@ type GridCell = {
     y: number;
 };
 
-// Create a grid structure to place stimuli
 function createGrid(numColumns: number, numRows: number): GridCell[] {
-    const grid: GridCell[] = []; // Explicitly define the array type
+    const grid: GridCell[] = [];
+    const middleColumnIndex = Math.floor(numColumns / 2); // Calculate the middle column index
     for (let row = 0; row < numRows; row++) {
         for (let col = 0; col < numColumns; col++) {
+            // Check if the current cell is on the border or in the middle column
+            const isBorder = col === 0 || col === numColumns - 1 || row === 0 || row === numRows - 1;
+            const isMiddleColumn = col === middleColumnIndex;
             grid.push({
                 id: `${col + 1}${String.fromCharCode(65 + row)}`, // Generates IDs like '1A', '2B', etc.
-                occupied: false,
+                occupied: isBorder || isMiddleColumn, // Mark as occupied if it's a border or middle column cell
                 x: col,
                 y: row
             });
@@ -55,10 +68,10 @@ function markAdjacentCellsAsOccupied(grid: GridCell[], selectedCell: GridCell) {
     grid.forEach(cell => {
         // Check horizontal and vertical proximity (extend to two cells)
         if (
-            (Math.abs(cell.x - selectedCell.x) <= 2 && cell.y === selectedCell.y) ||
-            (Math.abs(cell.y - selectedCell.y) <= 2 && cell.x === selectedCell.x) ||
+            (Math.abs(cell.x - selectedCell.x) <= ADJACENCY_LIMIT && cell.y === selectedCell.y) ||
+            (Math.abs(cell.y - selectedCell.y) <= ADJACENCY_LIMIT && cell.x === selectedCell.x) ||
             // Check diagonal proximity (keep within one cell)
-            (Math.abs(cell.x - selectedCell.x) === 1 && Math.abs(cell.y - selectedCell.y) === 1)
+            (Math.abs(cell.x - selectedCell.x) === DIAGONAL_ADJACENCY && Math.abs(cell.y - selectedCell.y) === DIAGONAL_ADJACENCY)
         ) {
             cell.occupied = true;
         }

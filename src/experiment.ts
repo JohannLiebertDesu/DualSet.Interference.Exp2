@@ -115,6 +115,38 @@ export async function run({
     ]
 };
 
+const trial = {
+  type: psychophysics,
+  stimuli: generateCircles(grid, 10, calculateCellSize(screenWidth, screenHeight, numColumns, numRows).cellWidth, calculateCellSize(screenWidth, screenHeight, numColumns, numRows).cellHeight),
+  choices: "NO_KEYS",
+  background_color: '#008000',
+  trial_duration: 1000,
+  post_trial_gap: 2000,
+  timeline_variables: [],
+  on_finish: function(data) {
+      // Reset grid after each trial
+      resetGrid(grid, numColumns, numRows);
+
+      // Example: return data about the trial, e.g., how many cells were occupied at the end
+      let occupiedCount = grid.filter(cell => cell.occupied).length;
+      return {occupiedCount: occupiedCount}; // Appends this data to the trial's data
+  }
+};
+
+// Populate timeline_variables with dynamic settings for varied trial configurations
+const dynamicStimuliSettings = [
+  { numCircles: 5, color: '#FF0000' },
+  { numCircles: 8, color: '#00FF00' },
+  { numCircles: 10, color: '#0000FF' }
+];
+
+trial.timeline_variables = dynamicStimuliSettings.map(settings => ({
+  stimuli: generateCircles(grid, settings.numCircles, calculateCellSize(screenWidth, screenHeight, numColumns, numRows).cellWidth, calculateCellSize(screenWidth, screenHeight, numColumns, numRows).cellHeight)
+}));
+
+jsPsych.run([trial]);
+
+
   // // Create an object to hold the experiment trials
   // const experiment_line:any[] = [];
   
