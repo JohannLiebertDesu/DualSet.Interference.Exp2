@@ -76,6 +76,36 @@ export async function run({
               trial_duration: 1000,
               post_trial_gap: 2000
         },
+        {
+          type: psychophysics, // Adding a psychophysics trial
+          stimuli: [
+              {
+                  obj_type: 'circle',
+                  startX: 250,
+                  startY: 250,
+                  radius: 20,
+                  line_color: '#000000',
+                  fill_color: jsPsych.timelineVariable('color'), // Use variable for color
+              }
+            ],
+            choices: "NO_KEYS",
+            post_trial_gap: 100
+        },
+        {
+          type: psychophysics, // Adding a psychophysics trial
+          stimuli: [
+              {
+                  obj_type: 'circle',
+                  startX: 250,
+                  startY: 250,
+                  radius: 20,
+                  line_color: '#000000',
+                  fill_color: jsPsych.timelineVariable('color'), // Use variable for color
+              }
+            ],
+            choices: "NO_KEYS",
+            post_trial_gap: 1000
+        },
     ],
     timeline_variables: [
         { face: 'person-1.jpg', name: 'Alex', color: '#FF0000' },
