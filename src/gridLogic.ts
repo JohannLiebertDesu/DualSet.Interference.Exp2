@@ -53,15 +53,23 @@ export function createGrid(numColumns: number, numRows: number): GridCell[] {
     return grid;
 }
 
-export function selectAndOccupyCell(grid: GridCell[]) {
-    let availableCells = grid.filter(cell => !cell.occupied);
+export function selectAndOccupyCell(grid: GridCell[], side: 'left' | 'right' | 'both') {
+    let availableCells = grid.filter(cell => !cell.occupied && (
+        side === 'both' ||
+        (side === 'left' && cell.x < numColumns / 2) ||
+        (side === 'right' && cell.x >= numColumns / 2)
+    ));
+    console.log('Available cells for side:', side, availableCells);
+
     if (availableCells.length === 0) return null; // No available cells
 
     let selectedCell = availableCells[Math.floor(Math.random() * availableCells.length)];
+    console.log('Selected cell:', selectedCell);
     // Mark this cell and adjacent cells as occupied
     markAdjacentCellsAsOccupied(grid, selectedCell);
     return selectedCell;
 }
+
 
 export function markAdjacentCellsAsOccupied(grid: GridCell[], selectedCell: GridCell) {
     grid.forEach(cell => {
@@ -86,6 +94,7 @@ export function resetGrid(grid: GridCell[], numColumns: number, numRows: number)
         const isMiddleColumn = cell.x === middleColumnIndex;
         cell.occupied = isBorder || isMiddleColumn;
     });
+    console.log('Grid reset', grid);
 }
 
 export function randomColor() {
@@ -105,25 +114,59 @@ export type Stimulus = {
     fill_color: string;
 };
 
-export function generateCircles(grid: GridCell[], numCircles: number, cellWidth: number, cellHeight: number): Stimulus[] {
+export function generateCircles(grid: GridCell[], numCircles: number, cellWidth: number, cellHeight: number, side: 'left' | 'right' | 'both'): Stimulus[] {
     const stimuli: Stimulus[] = [];
 
-    for (let i = 0; i < numCircles; i++) {
-        let cell = selectAndOccupyCell(grid);
-        if (cell) {
-            const color = randomColor(); // Generate a single random color for both line and fill
-            stimuli.push({
-                obj_type: 'circle',
-                startX: cell.x * cellWidth + cellWidth / 2,
-                startY: cell.y * cellHeight + cellHeight / 2,
-                radius: Math.min(cellWidth, cellHeight) / 4,
-                line_color: color,
-                fill_color: color,
-            });
+    if (numCircles === 6 && side === 'both') {
+        // Generate 3 circles for the left side
+        for (let i = 0; i < 3; i++) {
+            let cell = selectAndOccupyCell(grid, 'left');
+            if (cell) {
+                const color = randomColor(); // Generate a single random color for both line and fill
+                stimuli.push({
+                    obj_type: 'circle',
+                    startX: cell.x * cellWidth + cellWidth / 2,
+                    startY: cell.y * cellHeight + cellHeight / 2,
+                    radius: Math.min(cellWidth, cellHeight) / 4,
+                    line_color: color,
+                    fill_color: color,
+                });
+            }
+        }
+        // Generate 3 circles for the right side
+        for (let i = 0; i < 3; i++) {
+            let cell = selectAndOccupyCell(grid, 'right');
+            if (cell) {
+                const color = randomColor(); // Generate a single random color for both line and fill
+                stimuli.push({
+                    obj_type: 'circle',
+                    startX: cell.x * cellWidth + cellWidth / 2,
+                    startY: cell.y * cellHeight + cellHeight / 2,
+                    radius: Math.min(cellWidth, cellHeight) / 4,
+                    line_color: color,
+                    fill_color: color,
+                });
+            }
+        }
+    } else {
+        for (let i = 0; i < numCircles; i++) {
+            let cell = selectAndOccupyCell(grid, side);
+            if (cell) {
+                const color = randomColor(); // Generate a single random color for both line and fill
+                stimuli.push({
+                    obj_type: 'circle',
+                    startX: cell.x * cellWidth + cellWidth / 2,
+                    startY: cell.y * cellHeight + cellHeight / 2,
+                    radius: Math.min(cellWidth, cellHeight) / 4,
+                    line_color: color,
+                    fill_color: color,
+                });
+            }
         }
     }
 
     return stimuli;
 }
+
 
 

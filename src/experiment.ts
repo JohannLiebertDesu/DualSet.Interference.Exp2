@@ -77,38 +77,33 @@ export async function run({
   var trial = {
     type: psychophysics,
     stimuli: function (): Stimulus[] {
-      const numCircles = jsPsych.timelineVariable('numCircles');
-      console.log('Generating stimuli with numCircles:', numCircles);
-      const stimuli = generateCircles(grid, numCircles, cellWidth, cellHeight);
-      console.log('Generated Stimuli:', stimuli);  // Debug log
-      return stimuli;
+        const numCircles = jsPsych.timelineVariable('numCircles');
+        const side = numCircles === 3 ? (Math.random() < 0.5 ? 'left' : 'right') : 'both';  // Randomly choose left or right for 3 circles
+        console.log('Generating stimuli with numCircles:', numCircles, 'Side:', side);
+        const stimuli = generateCircles(grid, numCircles, cellWidth, cellHeight, side);
+        console.log('Generated Stimuli:', stimuli);  // Debug log
+        return stimuli;
     },
     choices: "NO_KEYS",
     background_color: '#FFFFFF',
     trial_duration: 1000,
     post_trial_gap: 2000,
-    timeline_variables: [
-      { numCircles: 3 },
-      { numCircles: 6 }
-    ],
-    sample: {
-      type: 'fixed-repetitions',
-      size: 1
-    },
     on_start: function() {
-      console.log('Trial started');
+        console.log('Trial started');
     },
     on_load: function() {
-      console.log('Trial loaded');
+        console.log('Trial loaded');
     },
     on_finish: function (data) {
-      resetGrid(grid, numColumns, numRows);  // Reset grid after each trial
-      let occupiedCount = grid.filter(cell => cell.occupied).length;
-      console.log('Occupied Count:', occupiedCount);  // Debug log
-      console.log('Trial finished');  // Debug log
-      return { occupiedCount: occupiedCount };
+        resetGrid(grid, numColumns, numRows);  // Reset grid after each trial
+        let occupiedCount = grid.filter(cell => cell.occupied).length;
+        console.log('Occupied Count:', occupiedCount);  // Debug log
+        console.log('Trial finished');  // Debug log
+        return { occupiedCount: occupiedCount };
     }
-  };
+};
+
+
 
   /************************************** Procedure **************************************/
 
@@ -131,7 +126,7 @@ export async function run({
     ],
     sample: {
       type: 'fixed-repetitions',
-      size: 1
+      size: 5
     }
   });
 
