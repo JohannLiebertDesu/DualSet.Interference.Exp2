@@ -1,45 +1,47 @@
-export function createColorWheel(canvas, centerX, centerY, radius) {
-  const ctx = canvas.getContext('2d');
-  const image = ctx.createImageData(canvas.width, canvas.height);
+/** A function that draws a color wheel on a canvas
+ * 
+ * @author Chenyu Li, ChatGPT
+ * 
+ * @param radius The radius of the color wheel
+ * @param ratio The ratio of the inner radius to the outer radius
+ * @param pos The center position of the color wheel
+ * @returns A object of color wheel that can be used in jsPsych psychophysics plugin
+ */
 
-  for (let y = 0; y < canvas.height; y++) {
-    for (let x = 0; x < canvas.width; x++) {
-      const dx = x - centerX;
-      const dy = y - centerY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+export const outerRadius = 200; // Adjust the outer radius for a larger wheel
+export const ratio = 0.7; // Inner radius is 70% of the outer radius
 
-      if (distance < radius) {
-        const angle = Math.atan2(dy, dx);
-        const hue = (angle * 180 / Math.PI + 360) % 360;
-        const [r, g, b] = hsvToRgb(hue / 360, 1, 1);
-        const index = (x + y * canvas.width) * 4;
-        image.data[index] = r;
-        image.data[index + 1] = g;
-        image.data[index + 2] = b;
-        image.data[index + 3] = 255;
-      }
-    }
-  }
+export function drawColorWheel(outerRadius: number, ratio: number, pos: [number, number]) {
+    const [centerX, centerY] = pos;
 
-  ctx.putImageData(image, 0, 0);
-}
+    return {
+        obj_type: 'manual',
+        startX: centerX,
+        startY: centerY,
+        drawFunc: function (stimulus, canvas, context) {
+            for (let angle = 0; angle < 360; angle += 1) {
+                let startAngle = (angle - 2) * Math.PI / 180;
+                let endAngle = angle * Math.PI / 180;
 
-function hsvToRgb(h, s, v) {
-  let r, g, b;
-  let i = Math.floor(h * 6);
-  let f = h * 6 - i;
-  let p = v * (1 - s);
-  let q = v * (1 - f * s);
-  let t = v * (1 - (1 - f) * s);
+                context.fillStyle = "hsl(" + angle + ", 80%, 50%)";
 
-  switch (i % 6) {
-    case 0: r = v, g = t, b = p; break;
-    case 1: r = q, g = v, b = p; break;
-    case 2: r = p, g = v, b = t; break;
-    case 3: r = p, g = q, b = v; break;
-    case 4: r = t, g = p, b = v; break;
-    case 5: r = v, g = p, b = q; break;
-  }
+                context.beginPath();
+                context.moveTo(centerX, centerY);
+                context.arc(centerX, centerY, outerRadius, startAngle, endAngle);
+                context.closePath();
+                context.fill();
+            }
 
-  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+            let innerRadius = outerRadius * ratio;
+            context.globalCompositeOperation = "destination-out";
+
+            context.fillStyle = "rgba(0, 0, 0, 1)";
+            context.beginPath();
+            context.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
+            context.closePath();
+            context.fill();
+
+            context.globalCompositeOperation = "source-over";
+        }
+    };
 }

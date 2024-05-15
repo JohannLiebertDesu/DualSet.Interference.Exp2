@@ -28,6 +28,9 @@ import { browser_screen } from "./instructions/browserCheck";
 // Grid logic and stimuli generation
 import { screenWidth, screenHeight, numColumns, numRows, createGrid, resetGrid, calculateCellSize, generateCircles, Stimulus, selectRandomCircle } from "./gridLogic";
 
+// Color wheel drawing function
+import { drawColorWheel, outerRadius, ratio } from "./colorWheel";
+
 import htmlKeyboardResponse from "@jspsych/plugin-html-keyboard-response";
 
 // Basic text display trial
@@ -110,67 +113,203 @@ export async function run({
     }
   };
   
+  let lastMouseX = 0;
+  let lastMouseY = 0;
+  
   const displayFirstCircleStage = {
     type: psychophysics,
     stimuli: function () {
-        // Retrieve the stimuli from the global data store
         let previousStimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop().value;
-        // Select one random circle from the previous stimuli and remove it from the list
         const { selectedStimulus, remainingStimuli } = selectRandomCircle(previousStimuli);
-        // Update the stored stimuli list
         jsPsych.data.write({ key: 'stimuli', value: remainingStimuli });
         console.log('Selected Circle for Display First Circle Stage:', selectedStimulus);
-        return [selectedStimulus];  // Return an array with the selected circle
+
+        const colorWheelObject = drawColorWheel(outerRadius, ratio, [selectedStimulus.startX, selectedStimulus.startY]);
+
+        return [
+            colorWheelObject,
+            {
+                ...selectedStimulus,
+                fill_color: 'gray',
+                line_color: 'gray',
+                original_color: selectedStimulus.original_color,
+                change_attr: function (stim, times, frames) {
+                    const canvas = document.querySelector('canvas');
+                    const context = canvas.getContext('2d');
+                    const rect = canvas.getBoundingClientRect();
+                    const x = lastMouseX;
+                    const y = lastMouseY;
+                    const centerX = stim.startX;
+                    const centerY = stim.startY;
+                    const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
+                    const color = `hsl(${angle}, 80%, 50%)`;
+                    stim.fill_color = color;
+                    console.log('Color updated to:', color);
+                }
+            }
+        ];
     },
-    choices: "ALL_KEYS",
-    background_color: '#FFFFFF',
+    choices: "NO_KEYS",
+    canvas_size: [screenWidth, screenHeight],
     on_start: function () {
         console.log('Display First Circle Stage started');
     },
     on_finish: function (data) {
         console.log('Display First Circle Stage finished');
-    }
-  };  
-  
-  const blankScreenStageTwo = {
-    type: htmlKeyboardResponse,
-    stimulus: '',
-    choices: "NO_KEYS",
-    trial_duration: 100,
-    on_start: function () {
-        console.log('Blank Screen Stage started');
     },
-    on_finish: function (data) {
-        console.log('Blank Screen Stage finished');
-    }
-  };
+    on_load: function () {
+        const canvas = document.querySelector('canvas');
+        const context = canvas.getContext('2d');
+        const rect = canvas.getBoundingClientRect();
 
-  const displaySecondCircleStage = {
-    type: psychophysics,
-    stimuli: function () {
-        // Again, retrieve the stimuli from the global data store
-        let previousStimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop().value;
-        // Select one random circle from the previous stimuli and remove it from the list
-        const { selectedStimulus, remainingStimuli } = selectRandomCircle(previousStimuli);
-        // Update the stored stimuli list
-        jsPsych.data.write({ key: 'stimuli', value: remainingStimuli });
-        console.log('Selected Circle for Display Second Circle Stage:', selectedStimulus);
-        return [selectedStimulus]; // Return an array with the selected circle
-    },
-    choices: "ALL_KEYS",
-    background_color: '#FFFFFF',
-    on_start: function () {
-        console.log('Display Second Circle Stage started');
-    },
-    on_finish: function (data) {
-        resetGrid(grid, numColumns, numRows); // Reset grid after each trial
-        let occupiedCount = grid.filter(cell => cell.occupied).length;
-        console.log('Occupied Count:', occupiedCount); // Debug log
-        console.log('Display Second Circle Stage finished');
-        return { occupiedCount: occupiedCount };
-    },
-    post_trial_gap: 1000
-  }; 
+        const stimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop().value;
+        const currentStimulus = stimuli[stimuli.length - 1];
+        lastMouseX = currentStimulus.startX;
+        lastMouseY = currentStimulus.startY;
+
+        canvas.addEventListener('mousemove', function (e) {
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            lastMouseX = x;
+            lastMouseY = y;
+
+            const centerX = currentStimulus.startX;
+            const centerY = currentStimulus.startY;
+            const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
+            const color = `hsl(${angle}, 80%, 50%)`;
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawColorWheel(outerRadius, ratio, [centerX, centerY]).drawFunc(null, canvas, context);
+
+            context.fillStyle = color;
+            context.beginPath();
+            context.arc(centerX, centerY, 50, 0, 2 * Math.PI);
+            context.fill();
+            console.log('Mouse moved:', x, y, 'Color:', color);
+        });
+
+        canvas.addEventListener('click', function (e) {
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = currentStimulus.startX;
+            const centerY = currentStimulus.startY;
+            const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
+            const color = `hsl(${angle}, 80%, 50%)`;
+
+            jsPsych.data.write({ selected_color: color });
+            console.log('Mouse clicked:', x, y, 'Color:', color);
+
+            jsPsych.finishTrial();
+        });
+    }
+};
+
+
+const blankScreenStageTwo = {
+  type: htmlKeyboardResponse,
+  stimulus: '',
+  choices: "NO_KEYS",
+  trial_duration: 100,
+  on_start: function () {
+      console.log('Blank Screen Stage started');
+  },
+  on_finish: function (data) {
+      console.log('Blank Screen Stage finished');
+  }
+};
+
+const displaySecondCircleStage = {
+  type: psychophysics,
+  stimuli: function () {
+      let previousStimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop().value;
+      const { selectedStimulus, remainingStimuli } = selectRandomCircle(previousStimuli);
+      jsPsych.data.write({ key: 'stimuli', value: remainingStimuli });
+      console.log('Selected Circle for Display Second Circle Stage:', selectedStimulus);
+
+      const colorWheelObject = drawColorWheel(outerRadius, ratio, [selectedStimulus.startX, selectedStimulus.startY]);
+
+      return [
+          colorWheelObject,
+          {
+              ...selectedStimulus,
+              fill_color: 'gray',
+              line_color: 'gray',
+              original_color: selectedStimulus.original_color,
+              change_attr: function (stim, times, frames) {
+                  const canvas = document.querySelector('canvas');
+                  const context = canvas.getContext('2d');
+                  const rect = canvas.getBoundingClientRect();
+                  const x = lastMouseX;
+                  const y = lastMouseY;
+                  const centerX = stim.startX;
+                  const centerY = stim.startY;
+                  const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
+                  const color = `hsl(${angle}, 80%, 50%)`;
+                  stim.fill_color = color;
+                  console.log('Color updated to:', color);
+              }
+          }
+      ];
+  },
+  choices: "NO_KEYS",
+  canvas_size: [screenWidth, screenHeight],
+  on_start: function () {
+      console.log('Display Second Circle Stage started');
+  },
+  on_finish: function (data) {
+      resetGrid(grid, numColumns, numRows);
+      let occupiedCount = grid.filter(cell => cell.occupied).length;
+      console.log('Occupied Count:', occupiedCount);
+      console.log('Display Second Circle Stage finished');
+      return { occupiedCount: occupiedCount };
+  },
+  on_load: function () {
+      const canvas = document.querySelector('canvas');
+      const context = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+
+      const stimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop().value;
+      const currentStimulus = stimuli[stimuli.length - 1];
+      lastMouseX = currentStimulus.startX;
+      lastMouseY = currentStimulus.startY;
+
+      canvas.addEventListener('mousemove', function (e) {
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          lastMouseX = x;
+          lastMouseY = y;
+
+          const centerX = currentStimulus.startX;
+          const centerY = currentStimulus.startY;
+          const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
+          const color = `hsl(${angle}, 80%, 50%)`;
+
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          drawColorWheel(outerRadius, ratio, [centerX, centerY]).drawFunc(null, canvas, context);
+
+          context.fillStyle = color;
+          context.beginPath();
+          context.arc(centerX, centerY, 50, 0, 2 * Math.PI);
+          context.fill();
+          console.log('Mouse moved:', x, y, 'Color:', color);
+      });
+
+      canvas.addEventListener('click', function (e) {
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const centerX = currentStimulus.startX;
+          const centerY = currentStimulus.startY;
+          const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
+          const color = `hsl(${angle}, 80%, 50%)`;
+
+          jsPsych.data.write({ selected_color: color });
+          console.log('Mouse clicked:', x, y, 'Color:', color);
+
+          jsPsych.finishTrial();
+      });
+  }
+};
+
 
 
   /************************************** Procedure **************************************/

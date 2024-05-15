@@ -112,17 +112,17 @@ export type Stimulus = {
     radius: number;
     line_color: string;
     fill_color: string;
+    original_color: string;
 };
 
 export function generateCircles(grid: GridCell[], numCircles: number, cellWidth: number, cellHeight: number, side: 'left' | 'right' | 'both'): Stimulus[] {
     const stimuli: Stimulus[] = [];
 
     if (numCircles === 6 && side === 'both') {
-        // Generate 3 circles for the left side
         for (let i = 0; i < 3; i++) {
             let cell = selectAndOccupyCell(grid, 'left');
             if (cell) {
-                const color = randomColor(); // Generate a single random color for both line and fill
+                const color = randomColor();
                 stimuli.push({
                     obj_type: 'circle',
                     startX: cell.x * cellWidth + cellWidth / 2,
@@ -130,14 +130,14 @@ export function generateCircles(grid: GridCell[], numCircles: number, cellWidth:
                     radius: Math.min(cellWidth, cellHeight) / 4,
                     line_color: color,
                     fill_color: color,
+                    original_color: color // Save the original color
                 });
             }
         }
-        // Generate 3 circles for the right side
         for (let i = 0; i < 3; i++) {
             let cell = selectAndOccupyCell(grid, 'right');
             if (cell) {
-                const color = randomColor(); // Generate a single random color for both line and fill
+                const color = randomColor();
                 stimuli.push({
                     obj_type: 'circle',
                     startX: cell.x * cellWidth + cellWidth / 2,
@@ -145,6 +145,7 @@ export function generateCircles(grid: GridCell[], numCircles: number, cellWidth:
                     radius: Math.min(cellWidth, cellHeight) / 4,
                     line_color: color,
                     fill_color: color,
+                    original_color: color // Save the original color
                 });
             }
         }
@@ -152,7 +153,7 @@ export function generateCircles(grid: GridCell[], numCircles: number, cellWidth:
         for (let i = 0; i < numCircles; i++) {
             let cell = selectAndOccupyCell(grid, side);
             if (cell) {
-                const color = randomColor(); // Generate a single random color for both line and fill
+                const color = randomColor();
                 stimuli.push({
                     obj_type: 'circle',
                     startX: cell.x * cellWidth + cellWidth / 2,
@@ -160,6 +161,7 @@ export function generateCircles(grid: GridCell[], numCircles: number, cellWidth:
                     radius: Math.min(cellWidth, cellHeight) / 4,
                     line_color: color,
                     fill_color: color,
+                    original_color: color // Save the original color
                 });
             }
         }
