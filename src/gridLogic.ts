@@ -4,7 +4,6 @@
  * @return An array of GridCell objects.
  */
 
-import { varSystem, expInfo } from "./settings"; // import the variables from settings
 import { random } from "@coglabuzh/webpsy.js";
 
 // Get the screen width and height, as well as number of rows and columns
@@ -97,23 +96,34 @@ export function randomColor() {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
-export function generateCircles(grid: GridCell[], numCircles: number, cellWidth: number, cellHeight: number) {
-    const stimuli = [];
+export type Stimulus = {
+    obj_type: 'circle';
+    startX: number;
+    startY: number;
+    radius: number;
+    line_color: string;
+    fill_color: string;
+};
+
+export function generateCircles(grid: GridCell[], numCircles: number, cellWidth: number, cellHeight: number): Stimulus[] {
+    const stimuli: Stimulus[] = [];
 
     for (let i = 0; i < numCircles; i++) {
         let cell = selectAndOccupyCell(grid);
         if (cell) {
+            const color = randomColor(); // Generate a single random color for both line and fill
             stimuli.push({
-                obj_type: 'circle',                        // Type of the object
-                startX: cell.x * cellWidth + cellWidth / 2, // Center of the cell
-                startY: cell.y * cellHeight + cellHeight / 2, // Center of the cell
-                radius: Math.min(cellWidth, cellHeight) / 4, // Circle radius
-                line_color: randomColor(),                  // Random line color
-                fill_color: randomColor(),                  // Random fill color
-                });
+                obj_type: 'circle',
+                startX: cell.x * cellWidth + cellWidth / 2,
+                startY: cell.y * cellHeight + cellHeight / 2,
+                radius: Math.min(cellWidth, cellHeight) / 4,
+                line_color: color,
+                fill_color: color,
+            });
         }
     }
 
     return stimuli;
 }
+
 
