@@ -168,5 +168,11 @@ export function generateCircles(grid: GridCell[], numCircles: number, cellWidth:
     return stimuli;
 }
 
+export function selectRandomCircle(stimuli) {
+    const randomIndex = random.randint(0, stimuli.length - 1);  // Adjusted to get a valid index
+    const selectedStimulus = stimuli[randomIndex];
+    const remainingStimuli = stimuli.filter((_, index) => index !== randomIndex);
+    return { selectedStimulus, remainingStimuli };
+}
 
 
