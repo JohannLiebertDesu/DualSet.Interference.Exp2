@@ -1,7 +1,7 @@
 /**
  * @title DualSet.Interference.Exp1
  * @description Systematically varying the combination possibilities and numbers of 2 sets that need to be memorized, including color patches and orientations. Variations include screen side, mixing or separating the qualitatively different items. Each trial concludes with the reproduction of 2 items.
- * @author Chenyu Li and Noah Rischert
+ * @author Chenyu Li, chatGPT and Noah Rischert
  * @version 0.2.1
  *
  *
@@ -14,6 +14,7 @@ import "../styles/main.scss";
 // jsPsych official plugin
 import preload from "@jspsych/plugin-preload";
 import psychophysics from "@kurokida/jspsych-psychophysics";
+import htmlKeyboardResponse from "@jspsych/plugin-html-keyboard-response";
 
 // Global variables
 import { jsPsych } from "./jsp";
@@ -29,9 +30,12 @@ import { browser_screen } from "./instructions/browserCheck";
 import { screenWidth, screenHeight, numColumns, numRows, createGrid, resetGrid, calculateCellSize, generateCircles, Stimulus, selectRandomCircle } from "./gridLogic";
 
 // Color wheel drawing function
-import { drawColorWheel, outerRadius, ratio } from "./colorWheel";
+import { drawColorWheel, outerRadius, ratio, calculateColorFromAngle, getAngleFromCoordinates, getRandomRotationAngle } from "./colorWheel";
 
-import htmlKeyboardResponse from "@jspsych/plugin-html-keyboard-response";
+// Blank screens
+import { blankScreenStageOne, blankScreenStageTwo, blankScreenStageThree } from './blankScreens';
+
+
 
 // Basic text display trial
 const basic_text_trial = {
@@ -46,6 +50,7 @@ const basic_text_trial = {
  *
  * @type {import("jspsych-builder").RunFunction}
  */
+
 export async function run({
   assetPaths,
   input = {},
@@ -100,22 +105,9 @@ export async function run({
     }
   };
   
-  const blankScreenStageOne = {
-    type: htmlKeyboardResponse,
-    stimulus: '',
-    choices: "NO_KEYS",
-    trial_duration: 1000,
-    on_start: function () {
-        console.log('Blank Screen Stage started');
-    },
-    on_finish: function (data) {
-        console.log('Blank Screen Stage finished');
-    }
-  };
-  
   let lastMouseX = 0;
   let lastMouseY = 0;
-  
+
   const displayFirstCircleStage = {
     type: psychophysics,
     stimuli: function () {
@@ -123,34 +115,50 @@ export async function run({
         const { selectedStimulus, remainingStimuli } = selectRandomCircle(previousStimuli);
         jsPsych.data.write({ key: 'stimuli', value: remainingStimuli });
         console.log('Selected Circle for Display First Circle Stage:', selectedStimulus);
-
-        const colorWheelObject = drawColorWheel(outerRadius, ratio, [selectedStimulus.startX, selectedStimulus.startY]);
-
+  
+        const rotationAngle = jsPsych.data.get().last(1).values()[0].rotationAngle || getRandomRotationAngle();
+        jsPsych.data.write({ key: 'rotationAngle', value: rotationAngle }); // Save the rotation angle if not present
+  
+        const colorWheelObject = drawColorWheel(outerRadius, ratio, [selectedStimulus.startX, selectedStimulus.startY], rotationAngle);
+  
         return [
             colorWheelObject,
             {
                 ...selectedStimulus,
-                fill_color: 'gray',
+                fill_color: 'gray', // Initial color will be set to gray but won't be used until mouse moves
                 line_color: 'gray',
                 original_color: selectedStimulus.original_color,
                 change_attr: function (stim, times, frames) {
-                    const canvas = document.querySelector('canvas');
-                    const context = canvas.getContext('2d');
-                    const rect = canvas.getBoundingClientRect();
-                    const x = lastMouseX;
-                    const y = lastMouseY;
-                    const centerX = stim.startX;
-                    const centerY = stim.startY;
-                    const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
-                    const color = `hsl(${angle}, 80%, 50%)`;
-                    stim.fill_color = color;
-                    console.log('Color updated to:', color);
+                    // Update only if the mouse has moved
+                    if (frames > 0) {
+                        const canvas = document.querySelector('canvas');
+                        if (canvas) {
+                            const context = canvas.getContext('2d');
+                            if (context) {
+                                const rect = canvas.getBoundingClientRect();
+                                const x = lastMouseX;
+                                const y = lastMouseY;
+                                const centerX = stim.startX;
+                                const centerY = stim.startY;
+                                const angle = getAngleFromCoordinates(x, y, centerX, centerY);
+                                const color = calculateColorFromAngle(angle, rotationAngle); // Use the saved rotation angle
+                                stim.fill_color = color;
+                                stim.line_color = color; // Update the line color to match the fill color
+                                console.log('Color updated to:', color);
+                            } else {
+                                console.error('Context not found');
+                            }
+                        } else {
+                            console.error('Canvas not found');
+                        }
+                    }
                 }
             }
         ];
     },
     choices: "NO_KEYS",
     canvas_size: [screenWidth, screenHeight],
+    background_color: '#FFFFFF',  // Set the background color to white
     on_start: function () {
         console.log('Display First Circle Stage started');
     },
@@ -158,65 +166,63 @@ export async function run({
         console.log('Display First Circle Stage finished');
     },
     on_load: function () {
-        const canvas = document.querySelector('canvas');
-        const context = canvas.getContext('2d');
-        const rect = canvas.getBoundingClientRect();
-
-        const stimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop().value;
-        const currentStimulus = stimuli[stimuli.length - 1];
-        lastMouseX = currentStimulus.startX;
-        lastMouseY = currentStimulus.startY;
-
-        canvas.addEventListener('mousemove', function (e) {
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            lastMouseX = x;
-            lastMouseY = y;
-
-            const centerX = currentStimulus.startX;
-            const centerY = currentStimulus.startY;
-            const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
-            const color = `hsl(${angle}, 80%, 50%)`;
-
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            drawColorWheel(outerRadius, ratio, [centerX, centerY]).drawFunc(null, canvas, context);
-
-            context.fillStyle = color;
-            context.beginPath();
-            context.arc(centerX, centerY, 50, 0, 2 * Math.PI);
-            context.fill();
-            console.log('Mouse moved:', x, y, 'Color:', color);
-        });
-
-        canvas.addEventListener('click', function (e) {
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const centerX = currentStimulus.startX;
-            const centerY = currentStimulus.startY;
-            const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
-            const color = `hsl(${angle}, 80%, 50%)`;
-
-            jsPsych.data.write({ selected_color: color });
-            console.log('Mouse clicked:', x, y, 'Color:', color);
-
-            jsPsych.finishTrial();
-        });
+      const canvas = document.querySelector('canvas');
+      if (canvas) {
+          const context = canvas.getContext('2d');
+          if (context) {
+              const rect = canvas.getBoundingClientRect();
+  
+              const stimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop().value;
+              const currentStimulus = stimuli[stimuli.length - 1];
+  
+              // Get the saved rotation angle
+              const rotationAngle = jsPsych.data.get().last(1).values()[0].rotationAngle;
+  
+              const centerX = currentStimulus.startX;
+              const centerY = currentStimulus.startY;
+  
+              canvas.addEventListener('mousemove', function (e) {
+                  const x = e.clientX - rect.left;
+                  const y = e.clientY - rect.top;
+                  lastMouseX = x;
+                  lastMouseY = y;
+  
+                  const angle = getAngleFromCoordinates(x, y, centerX, centerY);
+                  const color = calculateColorFromAngle(angle, rotationAngle); // Use the saved rotation angle
+  
+                  context.clearRect(0, 0, canvas.width, canvas.height);
+                  drawColorWheel(outerRadius, ratio, [centerX, centerY], rotationAngle).drawFunc(null, canvas, context);
+  
+                  context.fillStyle = color;
+                  context.strokeStyle = color; // Update the border color to match the fill color
+                  context.lineWidth = 5; // Set the border width
+                  context.beginPath();
+                  context.arc(centerX, centerY, 50, 0, 2 * Math.PI);
+                  context.fill();
+                  context.stroke(); // Draw the border
+                  console.log('Mouse moved:', x, y, 'Color:', color);
+              });
+  
+              canvas.addEventListener('click', function (e) {
+                  const x = e.clientX - rect.left;
+                  const y = e.clientY - rect.top;
+                  const angle = getAngleFromCoordinates(x, y, centerX, centerY);
+                  const color = calculateColorFromAngle(angle, rotationAngle); // Use the saved rotation angle
+  
+                  jsPsych.data.write({ selected_color: color });
+                  console.log('Mouse clicked:', x, y, 'Color:', color);
+  
+                  jsPsych.finishTrial();
+              });
+          } else {
+              console.error('Context not found');
+          }
+      } else {
+          console.error('Canvas not found');
+      }
     }
-};
+  };
 
-
-const blankScreenStageTwo = {
-  type: htmlKeyboardResponse,
-  stimulus: '',
-  choices: "NO_KEYS",
-  trial_duration: 100,
-  on_start: function () {
-      console.log('Blank Screen Stage started');
-  },
-  on_finish: function (data) {
-      console.log('Blank Screen Stage finished');
-  }
-};
 
 const displaySecondCircleStage = {
   type: psychophysics,
@@ -224,37 +230,53 @@ const displaySecondCircleStage = {
       let previousStimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop().value;
       const { selectedStimulus, remainingStimuli } = selectRandomCircle(previousStimuli);
       jsPsych.data.write({ key: 'stimuli', value: remainingStimuli });
-      console.log('Selected Circle for Display Second Circle Stage:', selectedStimulus);
+      console.log('Selected Circle for Display First Circle Stage:', selectedStimulus);
 
-      const colorWheelObject = drawColorWheel(outerRadius, ratio, [selectedStimulus.startX, selectedStimulus.startY]);
+      const rotationAngle = jsPsych.data.get().last(1).values()[0].rotationAngle || getRandomRotationAngle();
+      jsPsych.data.write({ key: 'rotationAngle', value: rotationAngle }); // Save the rotation angle if not present
+
+      const colorWheelObject = drawColorWheel(outerRadius, ratio, [selectedStimulus.startX, selectedStimulus.startY], rotationAngle);
 
       return [
           colorWheelObject,
           {
               ...selectedStimulus,
-              fill_color: 'gray',
+              fill_color: 'gray', // Initial color will be set to gray but won't be used until mouse moves
               line_color: 'gray',
               original_color: selectedStimulus.original_color,
               change_attr: function (stim, times, frames) {
-                  const canvas = document.querySelector('canvas');
-                  const context = canvas.getContext('2d');
-                  const rect = canvas.getBoundingClientRect();
-                  const x = lastMouseX;
-                  const y = lastMouseY;
-                  const centerX = stim.startX;
-                  const centerY = stim.startY;
-                  const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
-                  const color = `hsl(${angle}, 80%, 50%)`;
-                  stim.fill_color = color;
-                  console.log('Color updated to:', color);
+                  // Update only if the mouse has moved
+                  if (frames > 0) {
+                      const canvas = document.querySelector('canvas');
+                      if (canvas) {
+                          const context = canvas.getContext('2d');
+                          if (context) {
+                              const rect = canvas.getBoundingClientRect();
+                              const x = lastMouseX;
+                              const y = lastMouseY;
+                              const centerX = stim.startX;
+                              const centerY = stim.startY;
+                              const angle = getAngleFromCoordinates(x, y, centerX, centerY);
+                              const color = calculateColorFromAngle(angle, rotationAngle); // Use the saved rotation angle
+                              stim.fill_color = color;
+                              stim.line_color = color; // Update the line color to match the fill color
+                              console.log('Color updated to:', color);
+                          } else {
+                              console.error('Context not found');
+                          }
+                      } else {
+                          console.error('Canvas not found');
+                      }
+                  }
               }
           }
       ];
   },
   choices: "NO_KEYS",
   canvas_size: [screenWidth, screenHeight],
+  background_color: '#FFFFFF',  // Set the background color to white
   on_start: function () {
-      console.log('Display Second Circle Stage started');
+      console.log('Display First Circle Stage started');
   },
   on_finish: function (data) {
       resetGrid(grid, numColumns, numRows);
@@ -264,52 +286,62 @@ const displaySecondCircleStage = {
       return { occupiedCount: occupiedCount };
   },
   on_load: function () {
-      const canvas = document.querySelector('canvas');
-      const context = canvas.getContext('2d');
-      const rect = canvas.getBoundingClientRect();
+    const canvas = document.querySelector('canvas');
+    if (canvas) {
+        const context = canvas.getContext('2d');
+        if (context) {
+            const rect = canvas.getBoundingClientRect();
 
-      const stimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop().value;
-      const currentStimulus = stimuli[stimuli.length - 1];
-      lastMouseX = currentStimulus.startX;
-      lastMouseY = currentStimulus.startY;
+            const stimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop().value;
+            const currentStimulus = stimuli[stimuli.length - 1];
 
-      canvas.addEventListener('mousemove', function (e) {
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          lastMouseX = x;
-          lastMouseY = y;
+            // Get the saved rotation angle
+            const rotationAngle = jsPsych.data.get().last(1).values()[0].rotationAngle;
 
-          const centerX = currentStimulus.startX;
-          const centerY = currentStimulus.startY;
-          const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
-          const color = `hsl(${angle}, 80%, 50%)`;
+            const centerX = currentStimulus.startX;
+            const centerY = currentStimulus.startY;
 
-          context.clearRect(0, 0, canvas.width, canvas.height);
-          drawColorWheel(outerRadius, ratio, [centerX, centerY]).drawFunc(null, canvas, context);
+            canvas.addEventListener('mousemove', function (e) {
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                lastMouseX = x;
+                lastMouseY = y;
 
-          context.fillStyle = color;
-          context.beginPath();
-          context.arc(centerX, centerY, 50, 0, 2 * Math.PI);
-          context.fill();
-          console.log('Mouse moved:', x, y, 'Color:', color);
-      });
+                const angle = getAngleFromCoordinates(x, y, centerX, centerY);
+                const color = calculateColorFromAngle(angle, rotationAngle); // Use the saved rotation angle
 
-      canvas.addEventListener('click', function (e) {
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const centerX = currentStimulus.startX;
-          const centerY = currentStimulus.startY;
-          const angle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 180;
-          const color = `hsl(${angle}, 80%, 50%)`;
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                drawColorWheel(outerRadius, ratio, [centerX, centerY], rotationAngle).drawFunc(null, canvas, context);
 
-          jsPsych.data.write({ selected_color: color });
-          console.log('Mouse clicked:', x, y, 'Color:', color);
+                context.fillStyle = color;
+                context.strokeStyle = color; // Update the border color to match the fill color
+                context.lineWidth = 5; // Set the border width
+                context.beginPath();
+                context.arc(centerX, centerY, 50, 0, 2 * Math.PI);
+                context.fill();
+                context.stroke(); // Draw the border
+                console.log('Mouse moved:', x, y, 'Color:', color);
+            });
 
-          jsPsych.finishTrial();
-      });
-  }
+            canvas.addEventListener('click', function (e) {
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const angle = getAngleFromCoordinates(x, y, centerX, centerY);
+                const color = calculateColorFromAngle(angle, rotationAngle); // Use the saved rotation angle
+
+                jsPsych.data.write({ selected_color: color });
+                console.log('Mouse clicked:', x, y, 'Color:', color);
+
+                jsPsych.finishTrial();
+            });
+        } else {
+            console.error('Context not found');
+        }
+    } else {
+        console.error('Canvas not found');
+    }
+  },
 };
-
 
 
   /************************************** Procedure **************************************/
@@ -322,7 +354,8 @@ const trial = {
       blankScreenStageOne,
       displayFirstCircleStage,
       blankScreenStageTwo,
-      displaySecondCircleStage
+      displaySecondCircleStage,
+      blankScreenStageThree
   ],
   timeline_variables: [
       { numCircles: 3 },

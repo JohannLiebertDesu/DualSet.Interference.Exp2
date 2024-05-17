@@ -1,17 +1,22 @@
 /** A function that draws a color wheel on a canvas
- * 
- * @author Chenyu Li, ChatGPT
- * 
- * @param radius The radius of the color wheel
- * @param ratio The ratio of the inner radius to the outer radius
- * @param pos The center position of the color wheel
- * @returns A object of color wheel that can be used in jsPsych psychophysics plugin
+ * @param {number} outerRadius - The outer radius of the color wheel
+ * @param {number} ratio - The ratio of the inner radius to the outer radius
+ * @param {number[]} pos - The position of the center of the color wheel
+ * @param {number} rotationAngle - The rotation angle of the color wheel
  */
 
-export const outerRadius = 200; // Adjust the outer radius for a larger wheel
+
+function calculateOuterRadius() {
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    return Math.min(screenWidth, screenHeight) * 0.15; // Example calculation: 40% of the smaller screen dimension
+}
+
+export const outerRadius = calculateOuterRadius();
 export const ratio = 0.7; // Inner radius is 70% of the outer radius
 
-export function drawColorWheel(outerRadius: number, ratio: number, pos: [number, number]) {
+
+export function drawColorWheel(outerRadius, ratio, pos, rotationAngle) {
     const [centerX, centerY] = pos;
 
     return {
@@ -20,10 +25,10 @@ export function drawColorWheel(outerRadius: number, ratio: number, pos: [number,
         startY: centerY,
         drawFunc: function (stimulus, canvas, context) {
             for (let angle = 0; angle < 360; angle += 1) {
-                let startAngle = (angle - 2) * Math.PI / 180;
-                let endAngle = angle * Math.PI / 180;
+                let startAngle = (angle - 2 + rotationAngle) * Math.PI / 180;
+                let endAngle = (angle + rotationAngle) * Math.PI / 180;
 
-                context.fillStyle = "hsl(" + angle + ", 80%, 50%)";
+                context.fillStyle = `hsl(${angle}, 80%, 50%)`;
 
                 context.beginPath();
                 context.moveTo(centerX, centerY);
@@ -45,3 +50,18 @@ export function drawColorWheel(outerRadius: number, ratio: number, pos: [number,
         }
     };
 }
+
+export function getRandomRotationAngle() {
+    return Math.floor(Math.random() * 360);
+}
+
+export function calculateColorFromAngle(angle, rotationAngle) {
+    const adjustedAngle = (angle - rotationAngle + 360) % 360;  // Adjust the angle calculation
+    return `hsl(${adjustedAngle}, 80%, 50%)`;
+}
+
+export function getAngleFromCoordinates(x, y, centerX, centerY) {
+    const angle = (Math.atan2(y - centerY, x - centerX) * 180 / Math.PI + 360) % 360;
+    return angle;
+}
+

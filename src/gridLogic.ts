@@ -98,11 +98,12 @@ export function resetGrid(grid: GridCell[], numColumns: number, numRows: number)
 }
 
 export function randomColor() {
-    // Generate random RGB values
-    const r = random.randint(0, 256); // Random integer between 0 and 255
-    const g = random.randint(0, 256); // Random integer between 0 and 255
-    const b = random.randint(0, 256); // Random integer between 0 and 255
-    return `rgb(${r}, ${g}, ${b})`;
+    // Generate a random hue value between 0 and 360
+    const hue = Math.floor(Math.random() * 360);
+    // Use fixed saturation and lightness values to match the color wheel
+    const saturation = 80;
+    const lightness = 50;
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
 export type Stimulus = {
