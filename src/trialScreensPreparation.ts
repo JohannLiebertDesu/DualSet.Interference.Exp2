@@ -6,7 +6,7 @@ import psychophysics from "@kurokida/jspsych-psychophysics";
 import htmlKeyboardResponse from "@jspsych/plugin-html-keyboard-response";
 
 // Grid logic and stimuli generation
-import { screenWidth, screenHeight, numColumns, numRows, createGrid, resetGrid, calculateCellSize, generateCircles, Stimulus, selectRandomCircle } from "./gridLogic";
+import { screenWidth, screenHeight, selectRandomCircle } from "./gridLogic";
 
 // Color wheel drawing function
 import { drawColorWheel, outerRadius, ratio, calculateColorFromAngle, getAngleFromCoordinates, getRandomRotationAngle } from "./colorWheel";

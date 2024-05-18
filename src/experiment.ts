@@ -27,7 +27,7 @@ import { consent_screen, notice_screen } from "./instructions/consent";
 import { browser_screen } from "./instructions/browserCheck";
 
 // Grid logic and stimuli generation
-import { screenWidth, screenHeight, numColumns, numRows, createGrid, resetGrid, calculateCellSize, generateCircles } from "./gridLogic";
+import { screenWidth, screenHeight, numColumns, numRows, createGrid, resetGrid, calculateCellSize, placeAndGenerateStimuli } from "./gridLogic";
 
 // Blank screens
 import { blankScreenStageOne, blankScreenStageTwo, blankScreenStageThree, createColorWheelStage } from './trialScreensPreparation';
@@ -74,59 +74,65 @@ export async function run({
     console.log('Grid created', grid);
 
 
-    const displayColoredCirclesStage = {
-      type: psychophysics,
-      stimuli: function () {
-        const numCircles = jsPsych.timelineVariable('numCircles');
-        const side = numCircles === 3 ? (Math.random() < 0.5 ? 'left' : 'right') : 'both';
-        console.log('Generating stimuli with numCircles:', numCircles, 'Side:', side);
-        const stimuli = generateCircles(grid, numCircles, cellWidth, cellHeight, side);
-        console.log('Generated Stimuli:', stimuli);
-        jsPsych.data.write({ key: 'stimuli', value: stimuli });
-        return stimuli;
-      },
-      choices: "NO_KEYS",
-      background_color: '#FFFFFF',
-      trial_duration: 1000,
-      on_start: function () {
-        console.log('Display Circles Stage started');
-      },
-      on_finish: function (data) {
-        console.log('Display Circles Stage finished');
-      }
-    };
-  
+    const displayStimuli = {
+        type: psychophysics,
+        stimuli: function () {
+          const numCircles = jsPsych.timelineVariable('numCircles');
+          const stimulusType = jsPsych.timelineVariable('stimulusType');
+          const side = numCircles === 3 ? (Math.random() < 0.5 ? 'left' : 'right') : 'both';
+          console.log('Generating stimuli with numCircles:', numCircles, 'Side:', side, 'Stimulus Type:', stimulusType);
+          const stimuli = placeAndGenerateStimuli(grid, numCircles, cellWidth, cellHeight, side, stimulusType);
+          console.log('Generated Stimuli:', stimuli);
+          jsPsych.data.write({ key: 'stimuli', value: stimuli });
+          return stimuli;
+        },
+        choices: "NO_KEYS",
+        background_color: '#FFFFFF',
+        trial_duration: 1000,
+        on_start: function () {
+          console.log('Display Circles Stage started');
+        },
+        on_finish: function (data) {
+          console.log('Display Circles Stage finished');
+          resetGrid(grid, numColumns, numRows);
+          console.log('Grid reset at the end of Display Circles Stage');
+        }
+      };
+
+    
     const displayFirstCircleStage = createColorWheelStage('Display First Color Wheel');
-  
+    
     const displaySecondCircleStage = createColorWheelStage('Display Second Color Wheel', function (data) {
-      resetGrid(grid, numColumns, numRows);
-      let occupiedCount = grid.filter(cell => cell.occupied).length;
-      console.log('Occupied Count:', occupiedCount);
-      console.log('Display Second Circle Stage finished');
-      return { occupiedCount: occupiedCount };
+        resetGrid(grid, numColumns, numRows);
+        let occupiedCount = grid.filter(cell => cell.occupied).length;
+        console.log('Occupied Count:', occupiedCount);
+        console.log('Display Second Circle Stage finished');
+        return { occupiedCount: occupiedCount };
     });
   
     /************************************** Procedure **************************************/
   
     // Define the trial timeline
     const trial = {
-      timeline: [
-        displayColoredCirclesStage,
-        blankScreenStageOne,
-        displayFirstCircleStage,
-        blankScreenStageTwo,
-        displaySecondCircleStage,
-        blankScreenStageThree
-      ],
-      timeline_variables: [
-        { numCircles: 3 },
-        { numCircles: 6 }
-      ],
-      sample: {
-        type: 'fixed-repetitions',
-        size: 5
-      }
-    };
+        timeline: [
+          displayStimuli,
+        //   blankScreenStageOne,
+        //   displayFirstCircleStage,
+        //   blankScreenStageTwo,
+        //   displaySecondCircleStage,
+        //   blankScreenStageThree
+        ],
+        timeline_variables: [
+          { numCircles: 3, stimulusType: 'circle' },
+          { numCircles: 3, stimulusType: 'circle_with_line' },
+          { numCircles: 6, stimulusType: 'circle' },
+          { numCircles: 6, stimulusType: 'circle_with_line' }
+        ],
+        sample: {
+          type: 'fixed-repetitions',
+          size: 5
+        }
+      };
 
   // Push all the screen slides into the timeline
   // When you want to test the experiment, you can easily comment out the screens you don't want

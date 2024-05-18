@@ -107,69 +107,104 @@ export function randomColor() {
 }
 
 export type Stimulus = {
-    obj_type: 'circle';
-    startX: number;
-    startY: number;
-    radius: number;
-    line_color: string;
-    fill_color: string;
-    original_color: string;
+    obj_type: 'circle' | 'circle_with_line' | 'line';
+    startX?: number;
+    startY?: number;
+    radius?: number;
+    line_color?: string;
+    fill_color?: string;
+    original_color?: string;
+    angle?: number; // Angle of the line
+    line_length?: number; // Length of the line
+    line_width?: number; // Width of the line
+    x1?: number; // Start x-coordinate of the line
+    y1?: number; // Start y-coordinate of the line
+    x2?: number; // End x-coordinate of the line
+    y2?: number; // End y-coordinate of the line
 };
 
-export function generateCircles(grid: GridCell[], numCircles: number, cellWidth: number, cellHeight: number, side: 'left' | 'right' | 'both'): Stimulus[] {
+
+export function placeAndGenerateStimuli(grid: GridCell[], numCircles: number, cellWidth: number, cellHeight: number, side: 'left' | 'right' | 'both', stimulusType: 'circle' | 'circle_with_line'): Stimulus[] {
     const stimuli: Stimulus[] = [];
 
     if (numCircles === 6 && side === 'both') {
         for (let i = 0; i < 3; i++) {
             let cell = selectAndOccupyCell(grid, 'left');
             if (cell) {
-                const color = randomColor();
-                stimuli.push({
-                    obj_type: 'circle',
-                    startX: cell.x * cellWidth + cellWidth / 2,
-                    startY: cell.y * cellHeight + cellHeight / 2,
-                    radius: Math.min(cellWidth, cellHeight) / 4,
-                    line_color: color,
-                    fill_color: color,
-                    original_color: color // Save the original color
-                });
+                const newStimuli = createStimulus(cell, cellWidth, cellHeight, stimulusType);
+                stimuli.push(...newStimuli);
             }
         }
         for (let i = 0; i < 3; i++) {
             let cell = selectAndOccupyCell(grid, 'right');
             if (cell) {
-                const color = randomColor();
-                stimuli.push({
-                    obj_type: 'circle',
-                    startX: cell.x * cellWidth + cellWidth / 2,
-                    startY: cell.y * cellHeight + cellHeight / 2,
-                    radius: Math.min(cellWidth, cellHeight) / 4,
-                    line_color: color,
-                    fill_color: color,
-                    original_color: color // Save the original color
-                });
+                const newStimuli = createStimulus(cell, cellWidth, cellHeight, stimulusType);
+                stimuli.push(...newStimuli);
             }
         }
     } else {
         for (let i = 0; i < numCircles; i++) {
             let cell = selectAndOccupyCell(grid, side);
             if (cell) {
-                const color = randomColor();
-                stimuli.push({
-                    obj_type: 'circle',
-                    startX: cell.x * cellWidth + cellWidth / 2,
-                    startY: cell.y * cellHeight + cellHeight / 2,
-                    radius: Math.min(cellWidth, cellHeight) / 4,
-                    line_color: color,
-                    fill_color: color,
-                    original_color: color // Save the original color
-                });
+                const newStimuli = createStimulus(cell, cellWidth, cellHeight, stimulusType);
+                stimuli.push(...newStimuli);
             }
         }
     }
 
     return stimuli;
 }
+
+function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, stimulusType: 'circle' | 'circle_with_line'): Stimulus[] {
+    const color = randomColor();
+    const stimuli: Stimulus[] = [];
+
+    const centerX = cell.x * cellWidth + cellWidth / 2;
+    const centerY = cell.y * cellHeight + cellHeight / 2;
+    const radius = Math.min(cellWidth, cellHeight) / 4;
+
+    if (stimulusType === 'circle') {
+        stimuli.push({
+            obj_type: 'circle',
+            startX: centerX,
+            startY: centerY,
+            radius: radius,
+            line_color: color,
+            fill_color: color,
+            original_color: color // Save the original color
+        });
+    } else if (stimulusType === 'circle_with_line') {
+        const angle = Math.random() * 2 * Math.PI; // Random angle in radians
+        const line_length = radius; // Line length is equal to the radius
+        const line_width = 2; // Define line width as needed
+
+        const endX = centerX + line_length * Math.cos(angle);
+        const endY = centerY + line_length * Math.sin(angle);
+
+        stimuli.push({
+            obj_type: 'circle',
+            startX: centerX,
+            startY: centerY,
+            radius: radius,
+            line_color: 'black',
+            fill_color: 'transparent', // No fill for circle_with_line
+            original_color: 'transparent'
+        });
+        stimuli.push({
+            obj_type: 'line',
+            x1: centerX,
+            y1: centerY,
+            x2: endX,
+            y2: endY,
+            line_color: 'black',
+            line_width: line_width
+        });
+    }
+
+    return stimuli;
+}
+
+
 
 export function selectRandomCircle(stimuli) {
     const randomIndex = random.randint(0, stimuli.length - 1);  // Adjusted to get a valid index
