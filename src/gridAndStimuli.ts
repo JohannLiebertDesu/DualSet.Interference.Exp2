@@ -208,9 +208,21 @@ function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, s
 
 
 export function selectRandomCircle(stimuli) {
+    // Filter to get only circles
     const circles = stimuli.filter(stim => stim.obj_type === 'circle');
+    console.log('Circles:', circles);
+  
+    // Select a random circle
     const randomIndex = Math.floor(Math.random() * circles.length);
     const selectedStimulus = circles[randomIndex];
-    const remainingStimuli = stimuli.filter((_, index) => index !== randomIndex);
+  
+    // Use the properties of the selected circle to remove the circle
+    const remainingStimuli = stimuli.filter(stim => {
+      return !(stim.startX === selectedStimulus.startX && stim.startY === selectedStimulus.startY);
+    });
+  
+    console.log('remainingStimuli:', remainingStimuli);
     return { selectedStimulus, remainingStimuli };
   }
+  
+  
