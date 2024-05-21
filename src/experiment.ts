@@ -77,7 +77,7 @@ export async function run({
         stimuli: function () {
           const numCircles = jsPsych.timelineVariable('numCircles');
           const stimulusType = jsPsych.timelineVariable('stimulusType');
-          const side = numCircles === 3 ? (Math.random() < 0.5 ? 'left' : 'right') : 'both';
+          const side = numCircles === 3 ? 'left' : 'both';
           console.log('Generating stimuli with numCircles:', numCircles, 'Side:', side, 'Stimulus Type:', stimulusType);
           const stimuli = placeAndGenerateStimuli(grid, numCircles, cellWidth, cellHeight, side, stimulusType);
           console.log('Generated Stimuli:', stimuli);
@@ -165,7 +165,7 @@ export async function run({
         ],
         sample: {
           type: 'fixed-repetitions',
-          size: 5
+          size: 2
         }
       };
             
