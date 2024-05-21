@@ -10,12 +10,23 @@ import { setCSS } from "./task-fun/setCSS";
 
 setCSS();
 
+
+function assignParticipantGroup() {
+  const groups = ['colorFirst', 'orientationFirst'];
+  const randomIndex = Math.floor(Math.random() * groups.length);
+  return groups[randomIndex];
+}
+
+// Assign participant to a group
+const participantGroup = assignParticipantGroup();
+
 export const expInfo = {
   // settings for the experiment
   TITLE: "DualSet.Interference.Exp1",
   LANG: "en", // the default language of the experiment
 
   DESIGN: {
+    participantGroup: participantGroup,
     nBlocks: 1, // number of blocks
     nTrialsPerBlock: 4, // number of total trials in a block
     itemTypes: ["dot", "clock"],

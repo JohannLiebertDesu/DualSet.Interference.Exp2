@@ -71,8 +71,9 @@ export async function run({
   
     /************************************** Experiment **************************************/
 
+    /************************************** Block 1 **************************************/
 
-    const displayStimuli = {
+    const displayStimuliSingleSet = {
         type: psychophysics,
         stimuli: function () {
           const numCircles = jsPsych.timelineVariable('numCircles');
@@ -97,7 +98,7 @@ export async function run({
       };
     
   
-    /************************************** Procedure **************************************/
+
   
     const shouldDisplayColorWheel = () => {
         const stimulusType = jsPsych.timelineVariable('stimulusType');
@@ -124,9 +125,9 @@ export async function run({
     };
 
       
-    const trial = {
+    const single_set_trial = {
         timeline: [
-          displayStimuli,
+          displayStimuliSingleSet,
           blankScreenStageOne,
           colorWheelNode,
           orientationWheelNode,
@@ -169,7 +170,76 @@ export async function run({
         }
       };
             
+    /************************************** Block 2 **************************************/
+
+    const displayStimuliDualSet = {
+        type: psychophysics,
+        stimuli: function () {
+          // Helper function to generate stimuli
+          const generateStimuli = (numCircles, side, stimulusType) => {
+            return placeAndGenerateStimuli(grid, numCircles, cellWidth, cellHeight, side, stimulusType);
+          };
       
+          // Determine the first and second stimulus types based on participant group
+          const firstStimulusType = (expInfo.DESIGN.participantGroup === 'colorFirst') ? 'circle' : 'circle_with_line';
+          const secondStimulusType = (firstStimulusType === 'circle') ? 'circle_with_line' : 'circle';
+      
+          // Generate stimuli for both sides
+          const firstStimuli = generateStimuli(3, 'left', firstStimulusType);
+          const secondStimuli = generateStimuli(3, 'right', secondStimulusType);
+      
+          // Log and save data for the first stimuli
+          console.log('First Stimuli:', firstStimuli);
+          jsPsych.data.write({ key: 'firstStimuli', value: firstStimuli });
+          jsPsych.data.write({ key: 'firstStimulusType', value: firstStimulusType });
+      
+          // Log and save data for the second stimuli
+          console.log('Second Stimuli:', secondStimuli);
+          jsPsych.data.write({ key: 'secondStimuli', value: secondStimuli });
+          jsPsych.data.write({ key: 'secondStimulusType', value: secondStimulusType });
+      
+          // Set timing for the stimuli
+          const firstStimuliWithTiming = firstStimuli.map(stim => ({
+            ...stim,
+            show_start_time: 0,
+            show_end_time: 1000
+          }));
+      
+          const blankScreen = {
+            obj_type: 'text',
+            content: '', // Blank screen
+            show_start_time: 1000, // Start after the first stimuli
+            show_end_time: 3000 // End after 2000ms blank screen
+          };
+      
+          const secondStimuliWithTiming = secondStimuli.map(stim => ({
+            ...stim,
+            show_start_time: 3000,
+            show_end_time: 4000
+          }));
+      
+          // Return the sequence of stimuli
+          return [
+            ...firstStimuliWithTiming,
+            blankScreen,
+            ...secondStimuliWithTiming
+          ];
+        },
+        choices: "NO_KEYS",
+        background_color: '#FFFFFF',
+        trial_duration: 4000, // Total duration: 1000ms (first stimuli) + 2000ms (blank) + 1000ms (second stimuli)
+        on_start: function () {
+          console.log('Display Circles Stage started');
+        },
+        on_finish: function (data) {
+          console.log('Display Circles Stage finished');
+        }
+      };
+            
+      
+
+    /************************************** Procedure **************************************/
+
 
       timeline.push(basic_text_trial);
 
@@ -178,7 +248,8 @@ export async function run({
       // timeline.push(consent_screen);
       // timeline.push(notice_screen);
       timeline.push(browser_screen);
-      timeline.push(trial);
+      // timeline.push(single_set_trial);
+      timeline.push(displayStimuliDualSet);
       
       console.log('Timeline built', timeline);
       
