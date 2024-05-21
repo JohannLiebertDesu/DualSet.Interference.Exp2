@@ -27,11 +27,14 @@ import { consent_screen, notice_screen } from "./instructions/consent";
 import { browser_screen } from "./instructions/browserCheck";
 
 // Grid logic and stimuli generation
-import { screenWidth, screenHeight, numColumns, numRows, createGrid, resetGrid, calculateCellSize, placeAndGenerateStimuli } from "./gridLogic";
+import { screenWidth, screenHeight, numColumns, numRows, createGrid, calculateCellSize, placeAndGenerateStimuli, resetGrid } from "./gridAndStimuli";
 
 // Blank screens
-import { blankScreenStageOne, blankScreenStageTwo, blankScreenStageThree, createColorWheelStage } from './trialScreensPreparation';
+import { blankScreenStageOne, blankScreenStageTwo, blankScreenStageThree, createColorWheelStage, createOrientationWheelStage } from './trialScreensPreparation';
 
+// Calculate the grid cell size and create the grid
+export const grid = createGrid(numColumns, numRows);
+export const { cellWidth, cellHeight } = calculateCellSize(screenWidth, screenHeight, numColumns, numRows);
 
 
 // Basic text display trial
@@ -67,11 +70,6 @@ export async function run({
     console.log('Building timeline');
   
     /************************************** Experiment **************************************/
-  
-    // Calculate the grid cell size and create the grid
-    const grid = createGrid(numColumns, numRows);
-    const { cellWidth, cellHeight } = calculateCellSize(screenWidth, screenHeight, numColumns, numRows);
-    console.log('Grid created', grid);
 
 
     const displayStimuli = {
@@ -84,6 +82,7 @@ export async function run({
           const stimuli = placeAndGenerateStimuli(grid, numCircles, cellWidth, cellHeight, side, stimulusType);
           console.log('Generated Stimuli:', stimuli);
           jsPsych.data.write({ key: 'stimuli', value: stimuli });
+          jsPsych.data.write({ key: 'stimulusType', value: stimulusType }); // Save stimulus type for later
           return stimuli;
         },
         choices: "NO_KEYS",
@@ -94,33 +93,69 @@ export async function run({
         },
         on_finish: function (data) {
           console.log('Display Circles Stage finished');
-          resetGrid(grid, numColumns, numRows);
-          console.log('Grid reset at the end of Display Circles Stage');
         }
       };
-
     
-    const displayFirstCircleStage = createColorWheelStage('Display First Color Wheel');
-    
-    const displaySecondCircleStage = createColorWheelStage('Display Second Color Wheel', function (data) {
-        resetGrid(grid, numColumns, numRows);
-        let occupiedCount = grid.filter(cell => cell.occupied).length;
-        console.log('Occupied Count:', occupiedCount);
-        console.log('Display Second Circle Stage finished');
-        return { occupiedCount: occupiedCount };
-    });
   
     /************************************** Procedure **************************************/
   
-    // Define the trial timeline
+    const shouldDisplayColorWheel = () => {
+        const stimulusType = jsPsych.timelineVariable('stimulusType');
+        return stimulusType === 'circle';
+    };
+      
+    const shouldDisplayOrientationWheel = () => {
+        const stimulusType = jsPsych.timelineVariable('stimulusType');
+        return stimulusType === 'circle_with_line';
+    };
+
+    const colorWheelNode = {
+        timeline: [createColorWheelStage('Display First Color Wheel', jsPsych.timelineVariable('stimulusType'), function (data) {
+            console.log('Display First Color Wheel finished');
+        })],
+        conditional_function: shouldDisplayColorWheel
+    };
+    
+    const orientationWheelNode = {
+        timeline: [createOrientationWheelStage('Display First Orientation Wheel', jsPsych.timelineVariable('stimulusType'), function (data) {
+            console.log('Display First Orientation Wheel finished');
+        })],
+        conditional_function: shouldDisplayOrientationWheel
+    };
+
+      
     const trial = {
         timeline: [
           displayStimuli,
-        //   blankScreenStageOne,
-        //   displayFirstCircleStage,
-        //   blankScreenStageTwo,
-        //   displaySecondCircleStage,
-        //   blankScreenStageThree
+          blankScreenStageOne,
+          colorWheelNode,
+          orientationWheelNode,
+          blankScreenStageTwo,
+          {
+            timeline: [
+              createColorWheelStage('Display Second Color Wheel', jsPsych.timelineVariable('stimulusType'), function (data) {
+                resetGrid(grid, numColumns, numRows);
+                let occupiedCount = grid.filter(cell => cell.occupied).length;
+                console.log('Occupied Count:', occupiedCount);
+                console.log('Display Second Color Wheel finished');
+                return { occupiedCount: occupiedCount };
+              })
+            ],
+            conditional_function: shouldDisplayColorWheel
+          },
+          {
+            timeline: [
+              createOrientationWheelStage('Display Second Orientation Wheel', jsPsych.timelineVariable('stimulusType'), function (data) {
+                resetGrid(grid, numColumns, numRows);
+                let occupiedCount = grid.filter(cell => cell.occupied).length;
+                console.log('Occupied Count:', occupiedCount);
+                console.log('Display Second Orientation Wheel finished');
+                return { occupiedCount: occupiedCount };
+              })
+            ],
+            conditional_function: shouldDisplayOrientationWheel
+          },
+          blankScreenStageThree
         ],
         timeline_variables: [
           { numCircles: 3, stimulusType: 'circle' },
@@ -133,30 +168,28 @@ export async function run({
           size: 5
         }
       };
+            
+      
 
-  // Push all the screen slides into the timeline
-  // When you want to test the experiment, you can easily comment out the screens you don't want
+      timeline.push(basic_text_trial);
 
-  // Push the basic text display trial into the timeline
-  timeline.push(basic_text_trial);
-
-  timeline.push(preload_screen);
-  // timeline.push(welcome_screen);
-  // timeline.push(consent_screen);
-  // timeline.push(notice_screen);
-  timeline.push(browser_screen);
-  timeline.push(trial);
-
-  console.log('Timeline built', timeline);
-
-  try {
-    // Run the experiment timeline
-    console.log('Starting jsPsych.run');
-    await jsPsych.run(timeline);
-    console.log('Experiment finished');
-  } catch (error) {
-    console.error('Error running jsPsych experiment:', error);
-  }
+      timeline.push(preload_screen);
+      // timeline.push(welcome_screen);
+      // timeline.push(consent_screen);
+      // timeline.push(notice_screen);
+      timeline.push(browser_screen);
+      timeline.push(trial);
+      
+      console.log('Timeline built', timeline);
+      
+      try {
+        // Run the experiment timeline
+        console.log('Starting jsPsych.run');
+        await jsPsych.run(timeline);
+        console.log('Experiment finished');
+      } catch (error) {
+        console.error('Error running jsPsych experiment:', error);
+      }
 
   // Return the jsPsych instance so jsPsych Builder can access the experiment results (remove this
   // if you handle results yourself, be it here or in `on_finish()`)

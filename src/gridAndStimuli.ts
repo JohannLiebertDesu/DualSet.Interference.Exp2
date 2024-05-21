@@ -15,6 +15,9 @@ export const numRows = 6;  // Set the height of the grid
 const ADJACENCY_LIMIT = 2; // Set the adjacency limit
 const DIAGONAL_ADJACENCY = 1; // Set the diagonal adjacency
 
+// Calculate cell sizes once and export them
+export const cellSize = calculateCellSize(screenWidth, screenHeight, numColumns, numRows);
+export const radius = Math.min(cellSize.cellWidth, cellSize.cellHeight) / 4;
 
 // Calculate the cell size based on the screen dimensions and grid size
 export function calculateCellSize(screenWidth, screenHeight, numColumns, numRows) {
@@ -161,7 +164,6 @@ function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, s
 
     const centerX = cell.x * cellWidth + cellWidth / 2;
     const centerY = cell.y * cellHeight + cellHeight / 2;
-    const radius = Math.min(cellWidth, cellHeight) / 4;
 
     if (stimulusType === 'circle') {
         stimuli.push({
@@ -205,12 +207,10 @@ function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, s
 }
 
 
-
 export function selectRandomCircle(stimuli) {
-    const randomIndex = random.randint(0, stimuli.length - 1);  // Adjusted to get a valid index
-    const selectedStimulus = stimuli[randomIndex];
+    const circles = stimuli.filter(stim => stim.obj_type === 'circle');
+    const randomIndex = Math.floor(Math.random() * circles.length);
+    const selectedStimulus = circles[randomIndex];
     const remainingStimuli = stimuli.filter((_, index) => index !== randomIndex);
     return { selectedStimulus, remainingStimuli };
-}
-
-
+  }
