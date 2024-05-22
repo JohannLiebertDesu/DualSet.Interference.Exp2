@@ -9,15 +9,15 @@ import { random } from "@coglabuzh/webpsy.js";
 // Get the screen width and height, as well as number of rows and columns
 export const screenWidth = window.screen.width;  // Get the screen width
 export const screenHeight = window.screen.height;  // Get the screen height
-export const numColumns = 11;  // Set the width of the grid
-export const numRows = 6;  // Set the height of the grid
+export const numColumns = 13;  // Set the width of the grid
+export const numRows = 8;  // Set the height of the grid
 
 const ADJACENCY_LIMIT = 2; // Set the adjacency limit
 const DIAGONAL_ADJACENCY = 1; // Set the diagonal adjacency
 
 // Calculate cell sizes once and export them
 export const cellSize = calculateCellSize(screenWidth, screenHeight, numColumns, numRows);
-export const radius = Math.min(cellSize.cellWidth, cellSize.cellHeight) / 4;
+export const radius = Math.min(cellSize.cellWidth, cellSize.cellHeight) / 3;
 
 // Calculate the cell size based on the screen dimensions and grid size
 export function calculateCellSize(screenWidth, screenHeight, numColumns, numRows) {

@@ -100,32 +100,45 @@ export async function run({
   
 
   
-    const shouldDisplayColorWheel = () => {
+      const shouldDisplayColorWheel = () => {
         const stimulusType = jsPsych.timelineVariable('stimulusType');
         return stimulusType === 'circle';
-    };
+      };
       
-    const shouldDisplayOrientationWheel = () => {
+      const shouldDisplayOrientationWheel = () => {
         const stimulusType = jsPsych.timelineVariable('stimulusType');
         return stimulusType === 'circle_with_line';
-    };
-
-    const colorWheelNode = {
-        timeline: [createColorWheelStage('Display First Color Wheel', jsPsych.timelineVariable('stimulusType'), function (data) {
-            console.log('Display First Color Wheel finished');
-        })],
-        conditional_function: shouldDisplayColorWheel
-    };
-    
-    const orientationWheelNode = {
-        timeline: [createOrientationWheelStage('Display First Orientation Wheel', jsPsych.timelineVariable('stimulusType'), function (data) {
-            console.log('Display First Orientation Wheel finished');
-        })],
-        conditional_function: shouldDisplayOrientationWheel
-    };
-
+      };
       
-    const single_set_trial = {
+      const colorWheelNode = {
+        timeline: [
+          createColorWheelStage(
+            'Display First Color Wheel',
+            jsPsych.timelineVariable('stimulusType'),
+            'stimuli', // Data key for single set block
+            function (data) {
+              console.log('Display First Color Wheel finished');
+            }
+          )
+        ],
+        conditional_function: shouldDisplayColorWheel
+      };
+      
+      const orientationWheelNode = {
+        timeline: [
+          createOrientationWheelStage(
+            'Display First Orientation Wheel',
+            jsPsych.timelineVariable('stimulusType'),
+            'stimuli', // Data key for single set block
+            function (data) {
+              console.log('Display First Orientation Wheel finished');
+            }
+          )
+        ],
+        conditional_function: shouldDisplayOrientationWheel
+      };
+      
+      const single_set_trial = {
         timeline: [
           displayStimuliSingleSet,
           blankScreenStageOne,
@@ -134,25 +147,29 @@ export async function run({
           blankScreenStageTwo,
           {
             timeline: [
-              createColorWheelStage('Display Second Color Wheel', jsPsych.timelineVariable('stimulusType'), function (data) {
-                resetGrid(grid, numColumns, numRows);
-                let occupiedCount = grid.filter(cell => cell.occupied).length;
-                console.log('Occupied Count:', occupiedCount);
-                console.log('Display Second Color Wheel finished');
-                return { occupiedCount: occupiedCount };
-              })
+              createColorWheelStage(
+                'Display Second Color Wheel',
+                jsPsych.timelineVariable('stimulusType'),
+                'stimuli', // Data key for single set block
+                function (data) {
+                  resetGrid(grid, numColumns, numRows);
+                  console.log('Display Second Color Wheel finished');
+                }
+              )
             ],
             conditional_function: shouldDisplayColorWheel
           },
           {
             timeline: [
-              createOrientationWheelStage('Display Second Orientation Wheel', jsPsych.timelineVariable('stimulusType'), function (data) {
-                resetGrid(grid, numColumns, numRows);
-                let occupiedCount = grid.filter(cell => cell.occupied).length;
-                console.log('Occupied Count:', occupiedCount);
-                console.log('Display Second Orientation Wheel finished');
-                return { occupiedCount: occupiedCount };
-              })
+              createOrientationWheelStage(
+                'Display Second Orientation Wheel',
+                jsPsych.timelineVariable('stimulusType'),
+                'stimuli', // Data key for single set block
+                function (data) {
+                  resetGrid(grid, numColumns, numRows);
+                  console.log('Display Second Orientation Wheel finished');
+                }
+              )
             ],
             conditional_function: shouldDisplayOrientationWheel
           },
@@ -169,8 +186,12 @@ export async function run({
           size: 2
         }
       };
+      
             
     /************************************** Block 2 **************************************/
+
+    const participantGroup = expInfo.DESIGN.participantGroup;
+    const participantBlockType = expInfo.DESIGN.participantBlockType;
 
     const displayStimuliDualSet = {
         type: psychophysics,
@@ -181,7 +202,7 @@ export async function run({
           };
       
           // Determine the first and second stimulus types based on participant group
-          const firstStimulusType = (expInfo.DESIGN.participantGroup === 'colorFirst') ? 'circle' : 'circle_with_line';
+          const firstStimulusType = (participantGroup === 'colorFirst') ? 'circle' : 'circle_with_line';
           const secondStimulusType = (firstStimulusType === 'circle') ? 'circle_with_line' : 'circle';
       
           // Generate stimuli for both sides
@@ -232,24 +253,154 @@ export async function run({
           console.log('Display Circles Stage started');
         },
         on_finish: function (data) {
+          // Store the stimuli information in the trial data
+          const firstStimulusType = (participantGroup === 'colorFirst') ? 'circle' : 'circle_with_line';
+          const secondStimulusType = (firstStimulusType === 'circle') ? 'circle_with_line' : 'circle';
+          jsPsych.data.addProperties({
+            firstStimulusType: firstStimulusType,
+            secondStimulusType: secondStimulusType
+          });
+          console.log('Data stored in on_finish: ', {
+            firstStimulusType: firstStimulusType,
+            secondStimulusType: secondStimulusType
+          });
           console.log('Display Circles Stage finished');
         }
       };
-            
+                        
       
+      const dual_set_trial = {
+        timeline: [
+          displayStimuliDualSet,
+          blankScreenStageOne,
+          {
+            timeline: [
+              {
+                timeline: [
+                  {
+                    timeline: [
+                      createColorWheelStage('Display First Color Wheel', 'circle', 'firstStimuli', function (data) {
+                        console.log('Display First Color Wheel finished');
+                      }),
+                      blankScreenStageTwo,
+                      createOrientationWheelStage('Display Second Orientation Wheel', 'circle_with_line', 'secondStimuli', function (data) {
+                        console.log('Display Second Orientation Wheel finished');
+                        resetGrid(grid, numColumns, numRows);
+                      })
+                    ],
+                    conditional_function: function() {
+                      const lastTrialData = jsPsych.data.get().last(1).values()[0];
+                      console.log('lastTrialData in conditional_function (Systematic Color Wheel): ', lastTrialData);
+                      if (participantBlockType === 'systematic' && lastTrialData && lastTrialData.firstStimulusType === 'circle') {
+                        console.log('Condition met: Displaying First Color Wheel and Second Orientation Wheel');
+                        return true;
+                      }
+                      return false;
+                    }
+                  },
+                  {
+                    timeline: [
+                      createOrientationWheelStage('Display First Orientation Wheel', 'circle_with_line', 'firstStimuli', function (data) {
+                        console.log('Display First Orientation Wheel finished');
+                      }),
+                      blankScreenStageTwo,
+                      createColorWheelStage('Display Second Color Wheel', 'circle', 'secondStimuli', function (data) {
+                        console.log('Display Second Color Wheel finished');
+                        resetGrid(grid, numColumns, numRows);
+                      })
+                    ],
+                    conditional_function: function() {
+                      const lastTrialData = jsPsych.data.get().last(1).values()[0];
+                      console.log('lastTrialData in conditional_function (Systematic Orientation Wheel): ', lastTrialData);
+                      if (participantBlockType === 'systematic' && lastTrialData && lastTrialData.firstStimulusType === 'circle_with_line') {
+                        console.log('Condition met: Displaying First Orientation Wheel and Second Color Wheel');
+                        return true;
+                      }
+                      return false;
+                    }
+                  }
+                ],
+                conditional_function: function() {
+                  return participantBlockType === 'systematic';
+                }
+              },
+              {
+                timeline: [
+                  {
+                    timeline: [
+                      {
+                        timeline: [
+                          createColorWheelStage('Display Random Color Wheel', 'circle', 'firstStimuli', function (data) {
+                            console.log('Display Random Color Wheel finished');
+                          }),
+                          blankScreenStageTwo,
+                          createOrientationWheelStage('Display Random Orientation Wheel', 'circle_with_line', 'secondStimuli', function (data) {
+                            console.log('Display Random Orientation Wheel finished');
+                            resetGrid(grid, numColumns, numRows);
+                          })
+                        ],
+                        conditional_function: function() {
+                          const lastTrialData = jsPsych.data.get().last(1).values()[0];
+                          if (participantBlockType === 'random' && jsPsych.timelineVariable('randomStimulusType') === 'circle' && lastTrialData && lastTrialData.firstStimulusType === 'circle') {
+                            console.log('Condition met: Displaying Random Color Wheel and Random Orientation Wheel');
+                            return true;
+                          }
+                          return false;
+                        }
+                      },
+                      {
+                        timeline: [
+                          createOrientationWheelStage('Display Random Orientation Wheel', 'circle_with_line', 'firstStimuli', function (data) {
+                            console.log('Display Random Orientation Wheel finished');
+                          }),
+                          blankScreenStageTwo,
+                          createColorWheelStage('Display Random Color Wheel', 'circle', 'secondStimuli', function (data) {
+                            console.log('Display Random Color Wheel finished');
+                            resetGrid(grid, numColumns, numRows);
+                          })
+                        ],
+                        conditional_function: function() {
+                          const lastTrialData = jsPsych.data.get().last(1).values()[0];
+                          if (participantBlockType === 'random' && jsPsych.timelineVariable('randomStimulusType') === 'circle_with_line' && lastTrialData && lastTrialData.firstStimulusType === 'circle_with_line') {
+                            console.log('Condition met: Displaying Random Orientation Wheel and Random Color Wheel');
+                            return true;
+                          }
+                          return false;
+                        }
+                      }
+                    ],
+                  }
+                ],
+                conditional_function: function() {
+                  return participantBlockType === 'random';
+                }
+              },
+            ],
+          },
+        ],
+        timeline_variables: [
+          { randomStimulusType: 'circle' },
+          { randomStimulusType: 'circle_with_line' }
+        ],
+        sample: {
+          type: 'fixed-repetitions',
+          size: 3
+        }
+      };            
+
 
     /************************************** Procedure **************************************/
 
 
       timeline.push(basic_text_trial);
 
-      timeline.push(preload_screen);
-      // timeline.push(welcome_screen);
-      // timeline.push(consent_screen);
-      // timeline.push(notice_screen);
+    //   timeline.push(preload_screen);
+    //   timeline.push(welcome_screen);
+    //   timeline.push(consent_screen);
+    //   timeline.push(notice_screen);
       timeline.push(browser_screen);
       // timeline.push(single_set_trial);
-      timeline.push(displayStimuliDualSet);
+      timeline.push(dual_set_trial);
       
       console.log('Timeline built', timeline);
       

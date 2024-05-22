@@ -13,12 +13,17 @@ setCSS();
 
 function assignParticipantGroup() {
   const groups = ['colorFirst', 'orientationFirst'];
-  const randomIndex = Math.floor(Math.random() * groups.length);
-  return groups[randomIndex];
+  const blockTypes = ['random', 'systematic'];
+  const randomIndexGroup = Math.floor(Math.random() * groups.length);
+  const randomIndexBlock = Math.floor(Math.random() * blockTypes.length);
+  return {
+    group: groups[randomIndexGroup],
+    blockType: blockTypes[randomIndexBlock]
+  };
 }
 
-// Assign participant to a group
-const participantGroup = assignParticipantGroup();
+const { group: participantGroup, blockType: participantBlockType } = assignParticipantGroup();
+
 
 export const expInfo = {
   // settings for the experiment
@@ -27,6 +32,7 @@ export const expInfo = {
 
   DESIGN: {
     participantGroup: participantGroup,
+    participantBlockType: participantBlockType,
     nBlocks: 1, // number of blocks
     nTrialsPerBlock: 4, // number of total trials in a block
     itemTypes: ["dot", "clock"],

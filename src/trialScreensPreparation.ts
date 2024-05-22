@@ -37,12 +37,13 @@ let lastMouseY = 0;
 
 // Creating the color wheel stage
 
-export const createColorWheelStage = (stageName, stimulusType, onFinishCallback) => ({
+export const createColorWheelStage = (stageName, stimulusType, dataKey, onFinishCallback) => ({
   type: psychophysics,
   stimuli: function () {
     console.log('Stimulus Type:', stimulusType);
+    console.log('Data Key:', dataKey);
 
-    let previousStimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop()?.value || [];
+    let previousStimuli = jsPsych.data.get().values().filter(trial => trial.key === dataKey).pop()?.value || [];
     if (previousStimuli.length === 0) {
       console.error('No previous stimuli found.');
       return [];
@@ -79,7 +80,6 @@ export const createColorWheelStage = (stageName, stimulusType, onFinishCallback)
                 const color = calculateColorFromAngle(angle, rotationAngle);
                 stim.fill_color = color;
                 stim.line_color = color;
-                console.log('Color updated to:', color);
               } else {
                 console.error('Context not found');
               }
@@ -131,7 +131,6 @@ export const createColorWheelStage = (stageName, stimulusType, onFinishCallback)
           context.arc(centerX, centerY, 50, 0, 2 * Math.PI);
           context.fill();
           context.stroke();
-          console.log('Mouse moved:', x, y, 'Color:', color);
         });
 
         canvas.addEventListener('click', function (e) {
@@ -154,12 +153,13 @@ export const createColorWheelStage = (stageName, stimulusType, onFinishCallback)
   }
 });
 
-export const createOrientationWheelStage = (stageName, stimulusType, onFinishCallback) => ({
+export const createOrientationWheelStage = (stageName, stimulusType, dataKey, onFinishCallback) => ({
   type: psychophysics,
   stimuli: function () {
     console.log('Stimulus Type:', stimulusType);
+    console.log('Data Key:', dataKey);
 
-    let previousStimuli = jsPsych.data.get().values().filter(trial => trial.key === 'stimuli').pop()?.value || [];
+    let previousStimuli = jsPsych.data.get().values().filter(trial => trial.key === dataKey).pop()?.value || [];
     if (previousStimuli.length === 0) {
       console.error('No previous stimuli found.');
       return [];
