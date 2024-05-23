@@ -25,26 +25,21 @@ import { random } from "@coglabuzh/webpsy.js";
 import { welcome_screen } from "./instructions/welcome";
 import { consent_screen, notice_screen } from "./instructions/consent";
 import { browser_screen } from "./instructions/browserCheck";
+import { fullMode_screen } from "./instructions/fullScreen";
 
 // Grid logic and stimuli generation
-import { screenWidth, screenHeight, numColumns, numRows, createGrid, calculateCellSize, placeAndGenerateStimuli, resetGrid, drawGrid, goFullScreen, closeFullScreen } from "./gridAndStimuli";
+import { screenWidth, screenHeight, numColumns, numRows, createGrid, calculateCellSize, placeAndGenerateStimuli, resetGrid, closeFullScreen } from "./gridAndStimuli";
 
-// Blank screens
+// Trial screens preparation
 import { blankScreenStageOne, blankScreenStageTwo, blankScreenStageThree, createColorWheelStage, createOrientationWheelStage } from './trialScreensPreparation';
+
+
 import { create } from "domain";
+
 
 // Calculate the grid cell size and create the grid
 export const grid = createGrid(numColumns, numRows);
 export const { cellWidth, cellHeight } = calculateCellSize(screenWidth, screenHeight, numColumns, numRows);
-
-
-// Basic text display trial
-const basic_text_trial = {
-  type: htmlKeyboardResponse,
-  stimulus: '<p>Press any key to begin the experiment.</p>',
-  choices: "ALL_KEYS",
-  on_finish: () => console.log('Basic text trial finished')
-};
 
 /**
  * This function will be executed by jsPsych Builder and is expected to run the jsPsych experiment
@@ -184,7 +179,7 @@ export async function run({
         ],
         sample: {
           type: 'fixed-repetitions',
-          size: 2
+          size: 1
         }
       };
       
@@ -372,7 +367,7 @@ export async function run({
         ],
         sample: {
           type: 'fixed-repetitions',
-          size: 3
+          size: 2
         }
       };
             
@@ -381,30 +376,25 @@ export async function run({
     /************************************** Procedure **************************************/
 
 
-      timeline.push(basic_text_trial);
-
     //   timeline.push(preload_screen);
     //   timeline.push(welcome_screen);
     //   timeline.push(consent_screen);
     //   timeline.push(notice_screen);
-    timeline.push(goFullScreen);
+    timeline.push(fullMode_screen);
     //   timeline.push(browser_screen);
-    //   timeline.push(single_set_trial);
-    timeline.push(dual_set_trial);
-    timeline.push(closeFullScreen);
-
-
-      console.log('Timeline built', timeline);
-      
-      try {
-        // Run the experiment timeline
-        console.log('Starting jsPsych.run');
-        await jsPsych.run(timeline);
-        console.log('Experiment finished');
-      } catch (error) {
-        console.error('Error running jsPsych experiment:', error);
+    if (expInfo.DESIGN.participantBlockOrder === 'dualSetFirst') {
+        timeline.push(dual_set_trial);
+        timeline.push(single_set_trial);
+      } else {
+        timeline.push(single_set_trial);
+        timeline.push(dual_set_trial);
       }
 
+    timeline.push(closeFullScreen);
+    console.log('Timeline built', timeline);
+    jsPsych.run(timeline);
+
+    
   // Return the jsPsych instance so jsPsych Builder can access the experiment results (remove this
   // if you handle results yourself, be it here or in `on_finish()`)
   // return jsPsych;

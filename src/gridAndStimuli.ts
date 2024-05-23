@@ -5,7 +5,7 @@
  */
 
 import FullscreenPlugin from "@jspsych/plugin-fullscreen";
-
+import 
 // Get the screen width and height, as well as number of rows and columns
 export const screenWidth = window.screen.width;  // Get the screen width
 export const screenHeight = window.screen.height;  // Get the screen height

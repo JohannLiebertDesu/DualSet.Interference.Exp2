@@ -4,24 +4,40 @@
 
 
 
-// Task functions
-import { setCSS } from "./task-fun/setCSS";
+import { subjectID } from './participantCounterbalancing';
+import { setCSS } from './task-fun/setCSS';
 setCSS();
 
-
-function assignParticipantGroup() {
+function assignParticipantGroup(id) {
   const groups = ['colorFirst', 'orientationFirst'];
   const blockTypes = ['random', 'systematic'];
-  const randomIndexGroup = Math.floor(Math.random() * groups.length);
-  const randomIndexBlock = Math.floor(Math.random() * blockTypes.length);
-  return {
-    group: groups[randomIndexGroup],
-    blockType: blockTypes[randomIndexBlock]
+  const blockOrders = ['dualSetFirst', 'singleSetFirst'];
+
+  // Define the type for combinations
+  type Combination = {
+    group: string;
+    blockType: string;
+    blockOrder: string;
   };
+
+  // Generate all possible combinations of groups, block types, and block orders
+  const combinations: Combination[] = [];
+  for (const group of groups) {
+    for (const blockType of blockTypes) {
+      for (const blockOrder of blockOrders) {
+        combinations.push({ group, blockType, blockOrder });
+      }
+    }
+  }
+
+
+  // Assign based on participant ID using modulo to loop through combinations
+  const combination = combinations[(id - 1) % combinations.length];
+
+  return combination;
 }
 
-const { group: participantGroup, blockType: participantBlockType } = assignParticipantGroup();
-
+const { group: participantGroup, blockType: participantBlockType, blockOrder: participantBlockOrder } = assignParticipantGroup(subjectID);
 
 export const expInfo = {
   // settings for the experiment
@@ -31,6 +47,7 @@ export const expInfo = {
   DESIGN: {
     participantGroup: participantGroup,
     participantBlockType: participantBlockType,
+    participantBlockOrder: participantBlockOrder,
     nBlocks: 1, // number of blocks
     nTrialsPerBlock: 4, // number of total trials in a block
     itemTypes: ["dot", "clock"],
