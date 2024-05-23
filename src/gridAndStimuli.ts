@@ -4,7 +4,7 @@
  * @return An array of GridCell objects.
  */
 
-import { random } from "@coglabuzh/webpsy.js";
+import FullscreenPlugin from "@jspsych/plugin-fullscreen";
 
 // Get the screen width and height, as well as number of rows and columns
 export const screenWidth = window.screen.width;  // Get the screen width
@@ -18,6 +18,16 @@ const DIAGONAL_ADJACENCY = 1; // Set the diagonal adjacency
 // Calculate cell sizes once and export them
 export const cellSize = calculateCellSize(screenWidth, screenHeight, numColumns, numRows);
 export const radius = Math.min(cellSize.cellWidth, cellSize.cellHeight) / 3;
+
+export const goFullScreen = {
+    type: FullscreenPlugin,
+    fullscreen_mode: true
+}
+
+export const closeFullScreen = {
+    type: FullscreenPlugin,
+    fullscreen_mode: false
+}
 
 // Calculate the cell size based on the screen dimensions and grid size
 export function calculateCellSize(screenWidth, screenHeight, numColumns, numRows) {
@@ -226,3 +236,27 @@ export function selectRandomCircle(stimuli) {
   }
   
   
+// Create the grid
+const grid = createGrid(numColumns, numRows);
+
+// Function to draw the grid on canvas
+export function drawGrid(grid: GridCell[]): HTMLCanvasElement | null {
+    const canvas = document.createElement('canvas');
+    canvas.width = screenWidth;
+    canvas.height = screenHeight;
+    const context = canvas.getContext('2d');
+
+    if (context && cellSize) {
+        grid.forEach(cell => {
+            context.fillStyle = cell.occupied ? 'red' : 'green';
+            context.fillRect(cell.x * cellSize.cellWidth, cell.y * cellSize.cellHeight, cellSize.cellWidth, cellSize.cellHeight);
+            context.strokeRect(cell.x * cellSize.cellWidth, cell.y * cellSize.cellHeight, cellSize.cellWidth, cellSize.cellHeight);
+        });
+        return canvas;
+    } else {
+        console.error('Canvas context or cellSize is null');
+        return null;
+    }
+}
+
+

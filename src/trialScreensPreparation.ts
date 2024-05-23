@@ -9,7 +9,7 @@ import htmlKeyboardResponse from "@jspsych/plugin-html-keyboard-response";
 import { screenWidth, screenHeight, selectRandomCircle, radius } from "./gridAndStimuli";
 
 // Color wheel drawing function
-import { drawColorWheel, outerRadius, ratio, calculateColorFromAngle, getAngleFromCoordinates, getRandomRotationAngle, drawOrientationWheel } from "./wheels";
+import { drawColorWheel, outerRadius, ratio, calculateColorFromAngle, getAngleFromCoordinates, getRandomRotationAngle, drawOrientationWheel } from "./drawWheels";
 
 
 function createBlankScreenStage(duration: number, stageName: string) {
@@ -271,6 +271,8 @@ export const createOrientationWheelStage = (stageName, stimulusType, dataKey, on
     }
   }
 });
+
+
 
 
 
