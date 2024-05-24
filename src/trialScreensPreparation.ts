@@ -27,7 +27,8 @@ function createBlankScreenStage(duration: number, stageName: string) {
   };
 }
 
-export const blankScreenStageOne = createBlankScreenStage(1000, 'Blank Screen Stage One');
+export const blankScreenStageOneShort = createBlankScreenStage(1000, 'Blank Screen Stage One Short');
+export const blankScreenStageOneLong = createBlankScreenStage(2300, 'Blank Screen Stage One Long');
 export const blankScreenStageTwo = createBlankScreenStage(100, 'Blank Screen Stage Two');
 export const blankScreenStageThree = createBlankScreenStage(1000, 'Blank Screen Stage Three');
 
