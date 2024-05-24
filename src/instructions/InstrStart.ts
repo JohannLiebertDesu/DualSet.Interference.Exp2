@@ -1,32 +1,27 @@
-// jsPsych official plugin
-import htmlKeyboardResponse from "@jspsych/plugin-html-keyboard-response";
+import instructions from "@jspsych/plugin-instructions";
 
-// Basic Functions
-import { countDownTimer, convertTime } from "@coglabuzh/webpsy.js";
+// Define your instruction slides with images
+const instructionSlides = [
+  '<div class="main"><img src="assets/images/Slide1.gif" class="image"></img></div>',
+  '<div class="main"><img src="assets/images/Slide2.gif" class="image"></img></div>',
+  '<div class="main"><img src="assets/images/Slide3.gif" class="image"></img></div>',
+  '<div class="main"><img src="assets/images/Slide4.gif" class="image"></img></div>',
+  '<div class="main"><img src="assets/images/Slide5.gif" class="image"></img></div>',
+  '<div class="main"><img src="assets/images/Slide6.gif" class="image"></img></div>'
+];
 
-// Global variables
-import { expInfo } from "../settings";
-let { TIMING } = expInfo;
-import { TEXT } from "../task-fun/text";
-import { jsPsych } from "../jsp";
+// Log instruction slides
+console.log("Instruction Slides: ", instructionSlides);
 
-// display a cue screen with a countdown timer.
-export const trial_start_screen = {
-  type: htmlKeyboardResponse,
-  stimulus: function () {
-    return `<div class="fb-text">
-    ${TEXT.startTrial[expInfo.LANG]}
-    <br>
-    <br>
-  </div>`;
-  },
-  choices: [" "], // The only valid key response is the space bar.
-  trial_duration: TIMING.START, // Time to wait before automatically proceeding with the next trial.
-  post_trial_gap: 1000, // forced inter-trial interval after participant's response.
-  on_load: function () {
-    let time = convertTime(TIMING.START, "ms", "s");
-    //@ts-ignore
-    countDownTimer(time, "clock", jsPsych);
-  },
-  on_finish: function () {},
+// Define the instruction slides configuration
+export var instructionSlidesConfig = {
+  type: instructions,
+  pages: instructionSlides,
+  button_label_next: "Continue",
+  button_label_previous: "Back",
+  show_clickable_nav: true,
 };
+
+
+// Log instruction slides configuration
+console.log("Instruction Slides Config: ", instructionSlidesConfig);

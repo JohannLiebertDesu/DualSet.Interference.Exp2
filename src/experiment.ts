@@ -26,6 +26,8 @@ import { welcome_screen } from "./instructions/welcome";
 import { consent_screen, notice_screen } from "./instructions/consent";
 import { browser_screen } from "./instructions/browserCheck";
 import { fullMode_screen } from "./instructions/fullScreen";
+import { instructionSlidesConfig } from "./instructions/InstrStart";
+import { getDualSetWarning, singleSetWarning } from "./instructions/InstrWarnings";
 
 // Grid logic and stimuli generation
 import { screenWidth, screenHeight, numColumns, numRows, createGrid, calculateCellSize, placeAndGenerateStimuli, resetGrid, closeFullScreen } from "./gridAndStimuli";
@@ -65,9 +67,10 @@ export async function run({
   
     console.log('Building timeline');
   
+
     /************************************** Experiment **************************************/
 
-    /************************************** Block 1 **************************************/
+    /************************************** Block 1 preparation **************************************/
 
 // Prepare displaying the stimuli for the single set
 const displayStimuliSingleSet = {
@@ -180,14 +183,14 @@ const single_set_trial = {
         blankScreenStageThree
     ],
     timeline_variables: [
-        // { numCircles: 3, stimulusType: 'circle' },
-        // { numCircles: 3, stimulusType: 'circle_with_line' },
-        // { numCircles: 6, stimulusType: 'circle' },
+        { numCircles: 3, stimulusType: 'circle' },
+        { numCircles: 3, stimulusType: 'circle_with_line' },
+        { numCircles: 6, stimulusType: 'circle' },
         { numCircles: 6, stimulusType: 'circle_with_line' }
     ],
     sample: {
         type: 'fixed-repetitions',
-        size: 4
+        size: 2
     }
 };
 
@@ -197,7 +200,7 @@ const single_set_trial = {
 
       
             
-    /************************************** Block 2 **************************************/
+    /************************************** Block 2 preparation **************************************/
 
     const participantGroup = expInfo.DESIGN.participantGroup;
     const participantBlockType = expInfo.DESIGN.participantBlockType;
@@ -393,19 +396,29 @@ const single_set_trial = {
     //   timeline.push(welcome_screen);
     //   timeline.push(consent_screen);
     //   timeline.push(notice_screen);
+    timeline.push(preload_screen);
     timeline.push(browser_screen);
     timeline.push(fullMode_screen);
+    timeline.push(instructionSlidesConfig);
+
     if (expInfo.DESIGN.participantBlockOrder === 'dualSetFirst') {
-        timeline.push(dual_set_trial);
-        timeline.push(single_set_trial);
-      } else {
-        timeline.push(single_set_trial);
-        timeline.push(dual_set_trial);
-      }
+      timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
+      timeline.push(dual_set_trial);
+      timeline.push(singleSetWarning);
+      timeline.push(single_set_trial);
+  } else {
+      timeline.push(singleSetWarning);
+      timeline.push(single_set_trial);
+      timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
+      timeline.push(dual_set_trial);
+  }
 
     timeline.push(closeFullScreen);
-    console.log('Timeline built', timeline);
+    console.log("Final Timeline: ", timeline);
+
+    // Initialize and run the experiment
     jsPsych.run(timeline);
+
 
 
   // Return the jsPsych instance so jsPsych Builder can access the experiment results (remove this
