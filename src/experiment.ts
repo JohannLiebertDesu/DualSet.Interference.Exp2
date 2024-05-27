@@ -74,24 +74,34 @@ export async function run({
 
 // Prepare displaying the stimuli for the single set
 const displayStimuliSingleSet = {
-    type: psychophysics,
-    stimuli: function () {
-        const numCircles = jsPsych.timelineVariable('numCircles');
-        const stimulusType = jsPsych.timelineVariable('stimulusType');
-        const side = numCircles === 3 ? 'left' : 'both';
-        const stimuli = placeAndGenerateStimuli(grid, numCircles, cellWidth, cellHeight, side, stimulusType);
-        jsPsych.data.write({ key: 'stimuli', value: stimuli });
-        jsPsych.data.write({ key: 'stimulusType', value: stimulusType }); // Save stimulus type for later
-        return stimuli;
-    },
-    choices: "NO_KEYS",
-    background_color: '#FFFFFF',
-    trial_duration: function() {
-        return 100 * jsPsych.timelineVariable('numCircles');
-    },
-    on_start: function () {},
-    on_finish: function (data) {}
+  type: psychophysics,
+  stimuli: function () {
+      const numCircles = jsPsych.timelineVariable('numCircles');
+      const stimulusType = jsPsych.timelineVariable('stimulusType');
+      const side = numCircles === 3 ? 'left' : 'both';
+      const stimuli = placeAndGenerateStimuli(grid, numCircles, cellWidth, cellHeight, side, stimulusType);
+      jsPsych.data.write({ key: 'stimuli', value: stimuli });
+      jsPsych.data.write({ key: 'stimulusType', value: stimulusType }); // Save stimulus type for later
+      return stimuli;
+  },
+  choices: "NO_KEYS",
+  background_color: '#FFFFFF',
+  trial_duration: function() {
+      return 100 * jsPsych.timelineVariable('numCircles');
+  },
+  on_start: function (trial) {
+      trial.start_time = performance.now(); // Log start time
+      console.log(`Trial started at ${trial.start_time}`);
+  },
+  on_finish: function (data) {
+      const end_time = performance.now(); // Log end time
+      const duration = end_time - data.start_time; // Calculate duration
+      jsPsych.data.write({ key: 'actual_trial_duration', value: duration }); // Save duration
+      console.log(`Trial ended at ${end_time}`);
+      console.log(`Trial duration set: ${100 * jsPsych.timelineVariable('numCircles')} ms, Actual duration: ${duration} ms`);
+  }
 };
+
 
 // The folloing are just some tools for timeline construction of the single set trial
 
@@ -392,10 +402,10 @@ const single_set_trial = {
     /************************************** Procedure **************************************/
 
 
-    //   timeline.push(preload_screen);
-    //   timeline.push(welcome_screen);
-    //   timeline.push(consent_screen);
-    //   timeline.push(notice_screen);
+    timeline.push(preload_screen);
+    timeline.push(welcome_screen);
+    timeline.push(consent_screen);
+    timeline.push(notice_screen);
     timeline.push(preload_screen);
     timeline.push(browser_screen);
     timeline.push(fullMode_screen);
