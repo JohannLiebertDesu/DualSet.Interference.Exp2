@@ -28,6 +28,7 @@ import { browser_screen } from "./instructions/browserCheck";
 import { fullMode_screen } from "./instructions/fullScreen";
 import { instructionSlidesConfig } from "./instructions/InstrStart";
 import { getDualSetWarning, singleSetWarning } from "./instructions/InstrWarnings";
+import { breakOne, breakTwo } from "./instructions/breaks";
 
 // Grid logic and stimuli generation
 import { screenWidth, screenHeight, numColumns, numRows, createGrid, calculateCellSize, placeAndGenerateStimuli, resetGrid, closeFullScreen } from "./gridAndStimuli";
@@ -402,12 +403,11 @@ const single_set_trial = {
     /************************************** Procedure **************************************/
 
 
-    timeline.push(preload_screen);
-    timeline.push(welcome_screen);
-    timeline.push(consent_screen);
-    timeline.push(notice_screen);
-    timeline.push(preload_screen);
-    timeline.push(browser_screen);
+    // timeline.push(preload_screen);
+    // timeline.push(welcome_screen);
+    // timeline.push(consent_screen);
+    // timeline.push(notice_screen);
+    // timeline.push(browser_screen);
     timeline.push(fullMode_screen);
     timeline.push(instructionSlidesConfig);
 
