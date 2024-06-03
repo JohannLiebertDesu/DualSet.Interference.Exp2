@@ -50,6 +50,13 @@ function gen_survey_content(lang) {
                   isRequired: true,
               },
               {
+                type: "radiogroup",
+                title: SURVEY_INFO.EFFORT_QUES[lang],
+                name: "seriousness",
+                choices: SURVEY_INFO.EFFORT_OPT[lang],
+                isRequired: true,
+            },
+              {
                   type: "text",
                   title: SURVEY_INFO.COMMENT_QUES[lang],
                   name: "comments",

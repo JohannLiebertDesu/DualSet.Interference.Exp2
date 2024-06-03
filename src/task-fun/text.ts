@@ -248,6 +248,16 @@ export const SURVEY_INFO = {
     cn: ["是", "否"],
     en: ["Yes", "No"],
   },
+
+  EFFORT_QUES: {
+    en: "How much effort did you put into the trials?",
+    cn: "您在实验中投入了多少精力？",
+  },
+  EFFORT_OPT: { 
+    en: ["None at all", "A little", "Some", "A lot", "A great deal"],
+    cn: ["没有", "一点", "一些", "很多", "非常多"],
+  },
+
   COMMENT_QUES: {
     cn: "您对本次实验是否有任何建议或意见？",
     en: "Do you have any suggestions or comments on this experiment?",

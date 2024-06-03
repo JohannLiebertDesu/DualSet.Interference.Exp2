@@ -28,6 +28,7 @@ import { instructionSlidesConfig } from "./instructions/InstrStart";
 import { getDualSetWarning, singleSetWarning } from "./instructions/InstrWarnings";
 import { breakOne, breakTwo } from "./instructions/breaks";
 import { survey_screen } from "./experimentEnd/survey";
+import { debrief_screen } from "./experimentEnd/debriefing";
 
 // Grid logic and stimuli generation
 import { screenWidth, screenHeight, numColumns, numRows, createGrid, calculateCellSize, placeAndGenerateStimuli, resetGrid, closeFullScreen } from "./gridAndStimuli";
@@ -410,8 +411,6 @@ const single_set_trial = {
     // timeline.push(fullMode_screen);
     // timeline.push(instructionSlidesConfig);
 
-    timeline.push(survey_screen);
-
     if (expInfo.DESIGN.participantBlockOrder === 'dualSetFirst') {
       timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
       timeline.push(dual_set_trial);
@@ -424,6 +423,8 @@ const single_set_trial = {
       timeline.push(dual_set_trial);
   }
 
+    timeline.push(debrief_screen);
+    timeline.push(survey_screen);
     timeline.push(closeFullScreen);
     console.log("Final Timeline: ", timeline);
 
