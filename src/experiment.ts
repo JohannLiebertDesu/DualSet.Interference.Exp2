@@ -1,7 +1,7 @@
 /**
  * @title DualSet.Interference.Exp1
  * @description Systematically varying the combination possibilities and numbers of 2 sets that need to be memorized, including color patches and orientations. Variations include screen side, mixing or separating the qualitatively different items. Each trial concludes with the reproduction of 2 items.
- * @author Chenyu Li, chatGPT and Noah Rischert
+ * @author Chenyu Li, ChatGPT and Noah Rischert
  * @version 0.2.1
  *
  *
@@ -14,12 +14,10 @@ import "../styles/main.scss";
 // jsPsych official plugin
 import preload from "@jspsych/plugin-preload";
 import psychophysics from "@kurokida/jspsych-psychophysics";
-import htmlKeyboardResponse from "@jspsych/plugin-html-keyboard-response";
 
 // Global variables
 import { jsPsych } from "./jsp";
-import { expInfo } from "./settings";
-import { random } from "@coglabuzh/webpsy.js";
+import { expInfo, varSystem } from "./settings";
 
 // screens
 import { welcome_screen } from "./instructions/welcome";
@@ -29,6 +27,7 @@ import { fullMode_screen } from "./instructions/fullScreen";
 import { instructionSlidesConfig } from "./instructions/InstrStart";
 import { getDualSetWarning, singleSetWarning } from "./instructions/InstrWarnings";
 import { breakOne, breakTwo } from "./instructions/breaks";
+import { survey_screen } from "./experimentEnd/survey";
 
 // Grid logic and stimuli generation
 import { screenWidth, screenHeight, numColumns, numRows, createGrid, calculateCellSize, placeAndGenerateStimuli, resetGrid, closeFullScreen } from "./gridAndStimuli";
@@ -408,8 +407,10 @@ const single_set_trial = {
     // timeline.push(consent_screen);
     // timeline.push(notice_screen);
     // timeline.push(browser_screen);
-    timeline.push(fullMode_screen);
-    timeline.push(instructionSlidesConfig);
+    // timeline.push(fullMode_screen);
+    // timeline.push(instructionSlidesConfig);
+
+    timeline.push(survey_screen);
 
     if (expInfo.DESIGN.participantBlockOrder === 'dualSetFirst') {
       timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
