@@ -246,7 +246,6 @@ export const createOrientationWheelStage = (stageName, stimulusType, dataKey, on
           const y = e.clientY - rect.top;
           lastMouseX = x;
           lastMouseY = y;
-          console.log('mousemove event:', x, y);
         });
 
         canvas.addEventListener('click', function (e) {
