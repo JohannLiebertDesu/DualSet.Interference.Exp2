@@ -101,14 +101,25 @@ const displayStimuliSingleSet = {
   on_finish: function (data) {
       const end_time = performance.now(); // Log end time
       const duration = end_time - data.start_time; // Calculate duration
+      
+      // Get the practice status from the parent timeline
+      const practice = jsPsych.timelineVariable('practice');
+
       jsPsych.data.write({ key: 'actual_trial_duration', value: duration }); // Save duration
       console.log(`Trial ended at ${end_time}`);
       console.log(`Trial duration set: ${100 * jsPsych.timelineVariable('numCircles')} ms, Actual duration: ${duration} ms`);
+
+      // Save trial data
+      const trialData = {
+        practice: practice
+    };
+    storeTrialData(trialData);
+
   }
 };
 
 
-// The folloing are just some tools for timeline construction of the single set trial
+// The following are just some tools for timeline construction of the single set trial
 
 const shouldDisplayColorWheel = () => {
     const stimulusType = jsPsych.timelineVariable('stimulusType');
@@ -199,9 +210,9 @@ const singleSetTrialConfig = {
     ],
     timeline_variables: [
         { numCircles: 3, stimulusType: 'circle' },
-        { numCircles: 3, stimulusType: 'circle_with_line' },
-        { numCircles: 6, stimulusType: 'circle' },
-        { numCircles: 6, stimulusType: 'circle_with_line' }
+        // { numCircles: 3, stimulusType: 'circle_with_line' },
+        // { numCircles: 6, stimulusType: 'circle' },
+        // { numCircles: 6, stimulusType: 'circle_with_line' }
     ],
 };
 
@@ -213,7 +224,7 @@ const single_set_trial_practice = {
       type: 'fixed-repetitions',
       size: 1 // Adjust size for practice trials
   },
-  practice: true // Set practice status to true for practice trials
+  timeline_variables: singleSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: true})) // Set practice status to true for practice trials
 };
 
 const single_set_trial = {
@@ -222,7 +233,7 @@ const single_set_trial = {
       type: 'fixed-repetitions',
       size: 1 // Adjust size for actual trials
   },
-  practice: false // Set practice status to false for actual trials
+  timeline_variables: singleSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: false})) // Set practice status to false for actual trials
 };
 
 
@@ -236,79 +247,89 @@ const single_set_trial = {
     // Display stimuli for the dual set
 
     const displayStimuliDualSet = {
-        type: psychophysics,
-        stimuli: function () {
+      type: psychophysics,
+      stimuli: function () {
           // Helper function to generate stimuli
           const generateStimuli = (numCircles, side, stimulusType) => {
-            return placeAndGenerateStimuli(grid, numCircles, cellWidth, cellHeight, side, stimulusType);
+              return placeAndGenerateStimuli(grid, numCircles, cellWidth, cellHeight, side, stimulusType);
           };
-      
+  
           // Determine the first and second stimulus types based on participant group
           const firstStimulusType = (participantGroup === 'colorFirst') ? 'circle' : 'circle_with_line';
           const secondStimulusType = (firstStimulusType === 'circle') ? 'circle_with_line' : 'circle';
-      
+  
           // Generate stimuli for both sides
           const firstStimuli = generateStimuli(3, 'left', firstStimulusType);
           const secondStimuli = generateStimuli(3, 'right', secondStimulusType);
-      
+  
           // Log and save data for the first stimuli
           console.log('First Stimuli:', firstStimuli);
           jsPsych.data.write({ key: 'firstStimuli', value: firstStimuli });
           jsPsych.data.write({ key: 'firstStimulusType', value: firstStimulusType });
-      
+  
           // Log and save data for the second stimuli
           console.log('Second Stimuli:', secondStimuli);
           jsPsych.data.write({ key: 'secondStimuli', value: secondStimuli });
           jsPsych.data.write({ key: 'secondStimulusType', value: secondStimulusType });
-      
+  
           // Set timing for the stimuli
           const firstStimuliWithTiming = firstStimuli.map(stim => ({
-            ...stim,
-            show_start_time: 0,
-            show_end_time: 300
+              ...stim,
+              show_start_time: 0,
+              show_end_time: 300
           }));
-      
+  
           const blankScreen = {
-            obj_type: 'text',
-            content: '', // Blank screen
-            show_start_time: 300, // Start after the first stimuli
-            show_end_time: 2300 // End after 2000ms blank screen
+              obj_type: 'text',
+              content: '', // Blank screen
+              show_start_time: 300, // Start after the first stimuli
+              show_end_time: 2300 // End after 2000ms blank screen
           };
-      
+  
           const secondStimuliWithTiming = secondStimuli.map(stim => ({
-            ...stim,
-            show_start_time: 2300,
-            show_end_time: 2600
+              ...stim,
+              show_start_time: 2300,
+              show_end_time: 2600
           }));
-      
+  
           // Return the sequence of stimuli
           return [
-            ...firstStimuliWithTiming,
-            blankScreen,
-            ...secondStimuliWithTiming
+              ...firstStimuliWithTiming,
+              blankScreen,
+              ...secondStimuliWithTiming
           ];
-        },
-        choices: "NO_KEYS",
-        background_color: '#FFFFFF',
-        trial_duration: 2600, // Total duration: 300ms (first stimuli) + 2000ms (blank) + 300ms (second stimuli)
-        on_start: function () {
+      },
+      choices: "NO_KEYS",
+      background_color: '#FFFFFF',
+      trial_duration: 2600, // Total duration: 300ms (first stimuli) + 2000ms (blank) + 300ms (second stimuli)
+      on_start: function () {
           console.log('Display Circles Stage started');
-        },
-        on_finish: function (data) {
+      },
+      on_finish: function (data) {
           // Store the stimuli information in the trial data
           const firstStimulusType = (participantGroup === 'colorFirst') ? 'circle' : 'circle_with_line';
           const secondStimulusType = (firstStimulusType === 'circle') ? 'circle_with_line' : 'circle';
+          
+          // Get the practice status from the parent timeline
+          const practice = jsPsych.timelineVariable('practice');
+  
           jsPsych.data.addProperties({
-            firstStimulusType: firstStimulusType,
-            secondStimulusType: secondStimulusType
+              firstStimulusType: firstStimulusType,
+              secondStimulusType: secondStimulusType,
           });
           console.log('Data stored in on_finish: ', {
-            firstStimulusType: firstStimulusType,
-            secondStimulusType: secondStimulusType
+              firstStimulusType: firstStimulusType,
+              secondStimulusType: secondStimulusType,
           });
           console.log('Display Circles Stage finished');
-        }
-      };
+
+          // Save trial data
+          const trialData = {
+              practice: practice
+          };
+          storeTrialData(trialData);
+            }
+  };
     
       // The following code is in preparation for the systematic and random block of the dual set trial
 
@@ -407,7 +428,7 @@ const single_set_trial = {
         ],
         timeline_variables: [
             { randomStimulusType: 'circle' },
-            { randomStimulusType: 'circle_with_line' }
+            // { randomStimulusType: 'circle_with_line' }
         ]
     };
     
@@ -418,7 +439,7 @@ const single_set_trial = {
             type: 'fixed-repetitions',
             size: 1 // Adjust size for practice trials
         },
-        practice: true // Set practice status to true for practice trials
+        timeline_variables: dualSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: true})) // Set practice status to true for practice trials
       };
 
       const dual_set_trial = {
@@ -427,7 +448,7 @@ const single_set_trial = {
             type: 'fixed-repetitions',
             size: 1 // Adjust size for actual trials
         },
-        practice: false // Set practice status to false for actual trials
+        timeline_variables: dualSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: false})) // Set practice status to false for actual trials
       };
 
 
