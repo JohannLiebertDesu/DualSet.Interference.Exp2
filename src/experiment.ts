@@ -29,6 +29,7 @@ import { getDualSetWarning, singleSetWarning } from "./instructions/InstrWarning
 import { createQuickBreakScreen } from './instructions/breaks';
 import { survey_screen } from "./experimentEnd/survey";
 import { debrief_screen } from "./experimentEnd/debriefing";
+import { practiceOver } from "./instructions/afterPracticeScreen";
 
 // Grid logic and stimuli generation
 import { screenWidth, screenHeight, numColumns, numRows, createGrid, calculateCellSize, placeAndGenerateStimuli, resetGrid, closeFullScreen } from "./gridAndStimuli";
@@ -345,14 +346,14 @@ const single_set_trial = {
       const systematicTimeline = {
         timeline: [
           createConditionalTimeline('circle', 
-            createColorWheelStage('Display First Color Wheel', 'circle', 'firstStimuli', function (data) {}), 
-            createOrientationWheelStage('Display Second Orientation Wheel', 'circle_with_line', 'secondStimuli', function (data) {
+            createOrientationWheelStage('Display Second Orientation Wheel', 'circle_with_line', 'secondStimuli', function (data) {}), 
+            createColorWheelStage('Display First Color Wheel', 'circle', 'firstStimuli', function (data) {
               resetGrid(grid, numColumns, numRows);
             })
           ),
           createConditionalTimeline('circle_with_line', 
-            createOrientationWheelStage('Display First Orientation Wheel', 'circle_with_line', 'firstStimuli', function (data) {}), 
-            createColorWheelStage('Display Second Color Wheel', 'circle', 'secondStimuli', function (data) {
+            createColorWheelStage('Display Second Color Wheel', 'circle', 'secondStimuli', function (data) {}),
+            createOrientationWheelStage('Display First Orientation Wheel', 'circle_with_line', 'firstStimuli', function (data) {
               resetGrid(grid, numColumns, numRows);
             })
           )
@@ -433,13 +434,13 @@ const single_set_trial = {
     /************************************** Procedure **************************************/
 
 
-    timeline.push(preload_screen);
-    timeline.push(welcome_screen);
-    timeline.push(consent_screen);
-    timeline.push(notice_screen);
-    timeline.push(browser_screen);
-    timeline.push(fullMode_screen);
-    timeline.push(instructionSlidesConfig);
+    // timeline.push(preload_screen);
+    // timeline.push(welcome_screen);
+    // timeline.push(consent_screen);
+    // timeline.push(notice_screen);
+    // timeline.push(browser_screen);
+    // timeline.push(fullMode_screen);
+    // timeline.push(instructionSlidesConfig);
 
     // Here, we decide on the order of the blocks; do we first show the dual set or the single set? This depends on the participantBlockOrder
     if (expInfo.DESIGN.participantBlockOrder === 'dualSetFirst') {
@@ -447,6 +448,7 @@ const single_set_trial = {
       timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
       // Let them practice a bit
       timeline.push(dual_set_trial_practice);
+      timeline.push(practiceOver);
       for (let i = 0; i < 3; i++) {  // Loop through the 3 segments of the block
         timeline.push(dual_set_trial);
         timeline.push(createQuickBreakScreen()); // Add a quick break screen
@@ -458,6 +460,7 @@ const single_set_trial = {
       counters.trialNumberThisBlock = 1;
       timeline.push(singleSetWarning);
       timeline.push(single_set_trial_practice);
+      timeline.push(practiceOver);
       for (let i = 0; i < 3; i++) {
         timeline.push(single_set_trial);
         timeline.push(createQuickBreakScreen());
@@ -467,6 +470,7 @@ const single_set_trial = {
   } else {
       timeline.push(singleSetWarning);
       timeline.push(single_set_trial_practice);
+      timeline.push(practiceOver);
       for (let i = 0; i < 3; i++) {
         timeline.push(single_set_trial);
         timeline.push(createQuickBreakScreen());
@@ -477,6 +481,7 @@ const single_set_trial = {
       counters.trialNumberThisBlock = 1;
       timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
       timeline.push(dual_set_trial_practice);
+      timeline.push(practiceOver);
       for (let i = 0; i < 3; i++) {
         timeline.push(dual_set_trial);
         timeline.push(createQuickBreakScreen());
