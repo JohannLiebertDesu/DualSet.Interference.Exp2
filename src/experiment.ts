@@ -39,6 +39,9 @@ import { blankScreenStageOneShort, blankScreenStageOneLong, blankScreenStageTwo,
 
 import { create } from "domain";
 
+// Import the data storage function
+import { storeTrialData } from './data/dataStorage';
+
 
 // Calculate the grid cell size and create the grid
 export const grid = createGrid(numColumns, numRows);
@@ -403,13 +406,13 @@ const single_set_trial = {
     /************************************** Procedure **************************************/
 
 
-    // timeline.push(preload_screen);
-    // timeline.push(welcome_screen);
-    // timeline.push(consent_screen);
-    // timeline.push(notice_screen);
-    // timeline.push(browser_screen);
-    // timeline.push(fullMode_screen);
-    // timeline.push(instructionSlidesConfig);
+    timeline.push(preload_screen);
+    timeline.push(welcome_screen);
+    timeline.push(consent_screen);
+    timeline.push(notice_screen);
+    timeline.push(browser_screen);
+    timeline.push(fullMode_screen);
+    timeline.push(instructionSlidesConfig);
 
     if (expInfo.DESIGN.participantBlockOrder === 'dualSetFirst') {
       timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
@@ -423,8 +426,8 @@ const single_set_trial = {
       timeline.push(dual_set_trial);
   }
 
-    timeline.push(debrief_screen);
     timeline.push(survey_screen);
+    timeline.push(debrief_screen);
     timeline.push(closeFullScreen);
     console.log("Final Timeline: ", timeline);
 
