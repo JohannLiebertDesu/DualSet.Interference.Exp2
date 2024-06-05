@@ -8,6 +8,14 @@ import { subjectID } from './participantCounterbalancing';
 import { setCSS } from './task-fun/setCSS';
 setCSS();
 
+export const counters = {
+  blockNumber: 1,
+  trialNumberOverall: 1,
+  trialNumberThisBlock: 1,
+  segmentNumber: 1
+};
+
+
 function assignParticipantGroup(id) {
   const groups = ['colorFirst', 'orientationFirst'];
   const blockTypes = ['random', 'systematic'];
@@ -38,6 +46,8 @@ function assignParticipantGroup(id) {
 }
 
 const { group: participantGroup, blockType: participantBlockType, blockOrder: participantBlockOrder } = assignParticipantGroup(subjectID);
+
+
 
 export const expInfo = {
   // settings for the experiment

@@ -17,7 +17,7 @@ import psychophysics from "@kurokida/jspsych-psychophysics";
 
 // Global variables
 import { jsPsych } from "./jsp";
-import { expInfo, varSystem } from "./settings";
+import { expInfo, varSystem, counters } from "./settings";
 
 // screens
 import { welcome_screen } from "./instructions/welcome";
@@ -26,7 +26,7 @@ import { browser_screen } from "./instructions/browserCheck";
 import { fullMode_screen } from "./instructions/fullScreen";
 import { instructionSlidesConfig } from "./instructions/InstrStart";
 import { getDualSetWarning, singleSetWarning } from "./instructions/InstrWarnings";
-import { breakOne, breakTwo } from "./instructions/breaks";
+import { createQuickBreakScreen } from './instructions/breaks';
 import { survey_screen } from "./experimentEnd/survey";
 import { debrief_screen } from "./experimentEnd/debriefing";
 
@@ -144,7 +144,7 @@ const orientationWheelNode = {
 };
 
 // This is the actual timeline logic for the single set trial
-const single_set_trial = {
+const singleSetTrialConfig = {
     timeline: [
         displayStimuliSingleSet,
         {
@@ -202,14 +202,27 @@ const single_set_trial = {
         { numCircles: 6, stimulusType: 'circle' },
         { numCircles: 6, stimulusType: 'circle_with_line' }
     ],
-    sample: {
-        type: 'fixed-repetitions',
-        size: 2
-    }
 };
 
 
+// Define the configurations for practice and actual trials
+const single_set_trial_practice = {
+  ...singleSetTrialConfig,
+  sample: {
+      type: 'fixed-repetitions',
+      size: 1 // Adjust size for practice trials
+  },
+  practice: true // Set practice status to true for practice trials
+};
 
+const single_set_trial = {
+  ...singleSetTrialConfig,
+  sample: {
+      type: 'fixed-repetitions',
+      size: 1 // Adjust size for actual trials
+  },
+  practice: false // Set practice status to false for actual trials
+};
 
 
       
@@ -382,27 +395,41 @@ const single_set_trial = {
         }
       };
       
-      // Define the dual set trial
-      const dual_set_trial = {
+      // Define the dual set trial configuration
+      const dualSetTrialConfig = {
         timeline: [
-          displayStimuliDualSet,
-          blankScreenStageOneShort,
-          systematicTimeline,
-          randomTimeline,
-          blankScreenStageThree // Include blankScreenStageThree at the end
+            displayStimuliDualSet,
+            blankScreenStageOneShort,
+            systematicTimeline,
+            randomTimeline,
+            blankScreenStageThree // Include blankScreenStageThree at the end
         ],
         timeline_variables: [
-          { randomStimulusType: 'circle' },
-          { randomStimulusType: 'circle_with_line' }
-        ],
+            { randomStimulusType: 'circle' },
+            { randomStimulusType: 'circle_with_line' }
+        ]
+    };
+    
+      // Define the configurations for practice and actual trials
+      const dual_set_trial_practice = {
+        ...dualSetTrialConfig,
         sample: {
-          type: 'fixed-repetitions',
-          size: 2
-        }
+            type: 'fixed-repetitions',
+            size: 1 // Adjust size for practice trials
+        },
+        practice: true // Set practice status to true for practice trials
       };
-            
-            
-      
+
+      const dual_set_trial = {
+        ...dualSetTrialConfig,
+        sample: {
+            type: 'fixed-repetitions',
+            size: 1 // Adjust size for actual trials
+        },
+        practice: false // Set practice status to false for actual trials
+      };
+
+
     /************************************** Procedure **************************************/
 
 
@@ -414,16 +441,47 @@ const single_set_trial = {
     timeline.push(fullMode_screen);
     timeline.push(instructionSlidesConfig);
 
+    // Here, we decide on the order of the blocks; do we first show the dual set or the single set? This depends on the participantBlockOrder
     if (expInfo.DESIGN.participantBlockOrder === 'dualSetFirst') {
+      // Tell participants what to expect in the upcoming block
       timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
-      timeline.push(dual_set_trial);
+      // Let them practice a bit
+      timeline.push(dual_set_trial_practice);
+      for (let i = 0; i < 3; i++) {  // Loop through the 3 segments of the block
+        timeline.push(dual_set_trial);
+        timeline.push(createQuickBreakScreen()); // Add a quick break screen
+        counters.segmentNumber++;
+      }
+      // Reset the counters for the next block
+      counters.blockNumber++;
+      counters.segmentNumber = 1;
+      counters.trialNumberThisBlock = 1;
       timeline.push(singleSetWarning);
-      timeline.push(single_set_trial);
+      timeline.push(single_set_trial_practice);
+      for (let i = 0; i < 3; i++) {
+        timeline.push(single_set_trial);
+        timeline.push(createQuickBreakScreen());
+        counters.segmentNumber++;
+      }
+      // Do the same thing in the other case
   } else {
       timeline.push(singleSetWarning);
-      timeline.push(single_set_trial);
+      timeline.push(single_set_trial_practice);
+      for (let i = 0; i < 3; i++) {
+        timeline.push(single_set_trial);
+        timeline.push(createQuickBreakScreen());
+        counters.segmentNumber++;
+      }
+      counters.blockNumber++;
+      counters.segmentNumber = 1;
+      counters.trialNumberThisBlock = 1;
       timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
-      timeline.push(dual_set_trial);
+      timeline.push(dual_set_trial_practice);
+      for (let i = 0; i < 3; i++) {
+        timeline.push(dual_set_trial);
+        timeline.push(createQuickBreakScreen());
+        counters.segmentNumber++;
+      }
   }
 
     timeline.push(survey_screen);
