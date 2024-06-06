@@ -30,3 +30,15 @@ export function storeTrialData(trialData) {
 
     jsPsych.data.write(dataToStore);
 }
+
+
+export function incrementCounters() {
+    counters.trialNumberThisBlock++;
+    counters.trialNumberOverall++;
+}
+
+export function resetBlockCounters() {
+    counters.trialNumberThisBlock = 1;
+    counters.segmentNumber = 1;
+    counters.blockNumber++;
+}

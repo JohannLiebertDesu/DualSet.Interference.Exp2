@@ -14,10 +14,12 @@ import "../styles/main.scss";
 // jsPsych official plugin
 import preload from "@jspsych/plugin-preload";
 import psychophysics from "@kurokida/jspsych-psychophysics";
+import jsPsychCallFunction from "@jspsych/plugin-call-function";
 
 // Global variables
 import { jsPsych } from "./jsp";
 import { expInfo, varSystem, counters } from "./settings";
+import { subjectID } from "./participantCounterbalancing";
 
 // screens
 import { welcome_screen } from "./instructions/welcome";
@@ -41,8 +43,7 @@ import { blankScreenStageOneShort, blankScreenStageOneLong, blankScreenStageTwo,
 import { create } from "domain";
 
 // Import the data storage function
-import { storeTrialData } from './data/dataStorage';
-
+import { storeTrialData, incrementCounters, resetBlockCounters } from './data/dataStorage';
 
 // Calculate the grid cell size and create the grid
 export const grid = createGrid(numColumns, numRows);
@@ -108,13 +109,23 @@ const displayStimuliSingleSet = {
       jsPsych.data.write({ key: 'actual_trial_duration', value: duration }); // Save duration
       console.log(`Trial ended at ${end_time}`);
       console.log(`Trial duration set: ${100 * jsPsych.timelineVariable('numCircles')} ms, Actual duration: ${duration} ms`);
-
-      // Save trial data
+      
       const trialData = {
-        practice: practice
+        practice: practice,
+        nStimuli: jsPsych.timelineVariable('numCircles', true),
+        stimulusType: jsPsych.timelineVariable('stimulusType', true),
+        trialNumberThisBlock: counters.trialNumberThisBlock,
+        trialNumberOverall: counters.trialNumberOverall,
+        blockNumber: counters.blockNumber,
+        segmentNumber: counters.segmentNumber,
+        subjectID: subjectID,
+        whichStimuliFirst: expInfo.DESIGN.participantGroup,
+        areTrialsRandomOrSystematic: expInfo.DESIGN.participantBlockType,
+        dualOrSingleSetFirst: expInfo.DESIGN.participantBlockOrder
     };
-    storeTrialData(trialData);
 
+    // Save the trial data
+    storeTrialData(trialData);
   }
 };
 
@@ -325,10 +336,21 @@ const single_set_trial = {
 
           // Save trial data
           const trialData = {
-              practice: practice
-          };
+            practice: practice,
+            nStimuli: jsPsych.timelineVariable('numCircles', true),
+            stimulusType: jsPsych.timelineVariable('stimulusType', true),
+            trialNumberThisBlock: counters.trialNumberThisBlock,
+            trialNumberOverall: counters.trialNumberOverall,
+            blockNumber: counters.blockNumber,
+            segmentNumber: counters.segmentNumber,
+            subjectID: subjectID,
+            whichStimuliFirst: expInfo.DESIGN.participantGroup,
+            areTrialsRandomOrSystematic: expInfo.DESIGN.participantBlockType,
+            dualOrSingleSetFirst: expInfo.DESIGN.participantBlockOrder
+        };
           storeTrialData(trialData);
-            }
+      
+        }
   };
     
       // The following code is in preparation for the systematic and random block of the dual set trial
@@ -465,54 +487,69 @@ const single_set_trial = {
 
     // Here, we decide on the order of the blocks; do we first show the dual set or the single set? This depends on the participantBlockOrder
     if (expInfo.DESIGN.participantBlockOrder === 'dualSetFirst') {
-      // Tell participants what to expect in the upcoming block
+      // Dual Set First
       timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
-      // Let them practice a bit
       timeline.push(dual_set_trial_practice);
       timeline.push(practiceOver);
-      for (let i = 0; i < 3; i++) {  // Loop through the 3 segments of the block
-        timeline.push(dual_set_trial);
-        timeline.push(createQuickBreakScreen()); // Add a quick break screen
-        counters.segmentNumber++;
+      
+      for (let i = 0; i < 3; i++) {
+          timeline.push({
+              timeline: [dual_set_trial, createQuickBreakScreen()],
+              on_timeline_finish: incrementCounters
+          });
       }
-      // Reset the counters for the next block
-      counters.blockNumber++;
-      counters.segmentNumber = 1;
-      counters.trialNumberThisBlock = 1;
+  
+      // Reset counters after the dual set block
+      timeline.push({
+          type: jsPsychCallFunction,
+          func: resetBlockCounters
+      });
+      
       timeline.push(singleSetWarning);
       timeline.push(single_set_trial_practice);
       timeline.push(practiceOver);
+      
       for (let i = 0; i < 3; i++) {
-        timeline.push(single_set_trial);
-        timeline.push(createQuickBreakScreen());
-        counters.segmentNumber++;
+          timeline.push({
+              timeline: [single_set_trial, createQuickBreakScreen()],
+              on_timeline_finish: incrementCounters
+          });
       }
-      // Do the same thing in the other case
   } else {
+      // Single Set First
       timeline.push(singleSetWarning);
       timeline.push(single_set_trial_practice);
       timeline.push(practiceOver);
+      
       for (let i = 0; i < 3; i++) {
-        timeline.push(single_set_trial);
-        timeline.push(createQuickBreakScreen());
-        counters.segmentNumber++;
+          timeline.push({
+              timeline: [single_set_trial, createQuickBreakScreen()],
+              on_timeline_finish: incrementCounters
+          });
       }
-      counters.blockNumber++;
-      counters.segmentNumber = 1;
-      counters.trialNumberThisBlock = 1;
+  
+      // Reset counters after the single set block
+      timeline.push({
+          type: jsPsychCallFunction,
+          func: resetBlockCounters
+      });
+      
       timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
       timeline.push(dual_set_trial_practice);
       timeline.push(practiceOver);
+      
       for (let i = 0; i < 3; i++) {
-        timeline.push(dual_set_trial);
-        timeline.push(createQuickBreakScreen());
-        counters.segmentNumber++;
+          timeline.push({
+              timeline: [dual_set_trial, createQuickBreakScreen()],
+              on_timeline_finish: incrementCounters
+          });
       }
   }
+  
 
-    timeline.push(survey_screen);
-    timeline.push(debrief_screen);
-    timeline.push(closeFullScreen);
+    // timeline.push(survey_screen);
+    // timeline.push(debrief_screen);
+    // timeline.push(closeFullScreen);
     console.log("Final Timeline: ", timeline);
 
     // Initialize and run the experiment
