@@ -34,7 +34,7 @@ import { debrief_screen } from "./experimentEnd/debriefing";
 import { practiceOver } from "./instructions/afterPracticeScreen";
 
 // Grid logic and stimuli generation
-import { screenWidth, screenHeight, numColumns, numRows, createGrid, calculateCellSize, placeAndGenerateStimuli, resetGrid, closeFullScreen } from "./gridAndStimuli";
+import { screenWidth, screenHeight, numColumns, numRows, createGrid, calculateCellSize, placeAndGenerateStimuli, resetGrid, closeFullScreen, Stimulus } from "./gridAndStimuli";
 
 // Trial screens preparation
 import { blankScreenStageOneShort, blankScreenStageOneLong, blankScreenStageTwo, blankScreenStageThree, createColorWheelStage, createOrientationWheelStage } from './trialScreensPreparation';
@@ -43,7 +43,7 @@ import { blankScreenStageOneShort, blankScreenStageOneLong, blankScreenStageTwo,
 import { create } from "domain";
 
 // Import the data storage function
-import { storeTrialData, incrementCounters, resetBlockCounters } from './data/dataStorage';
+import { storeTrialData, incrementCounters, resetBlockCounters, incrementSegmentNumber, resetTrialinBlockCounter } from './data/dataStorage';
 
 // Calculate the grid cell size and create the grid
 export const grid = createGrid(numColumns, numRows);
@@ -79,55 +79,123 @@ export async function run({
     /************************************** Block 1 preparation **************************************/
 
 // Prepare displaying the stimuli for the single set
+// Global variable to store stimuli temporarily
+let currentStimuli: Stimulus[] = [];
+
 const displayStimuliSingleSet = {
   type: psychophysics,
   stimuli: function () {
-      const numCircles = jsPsych.timelineVariable('numCircles');
-      const stimulusType = jsPsych.timelineVariable('stimulusType');
-      const side = numCircles === 3 ? 'left' : 'both';
-      const stimuli = placeAndGenerateStimuli(grid, numCircles, cellWidth, cellHeight, side, stimulusType);
-      jsPsych.data.write({ key: 'stimuli', value: stimuli });
-      jsPsych.data.write({ key: 'stimulusType', value: stimulusType }); // Save stimulus type for later
-      return stimuli;
+    // Retrieve the number of circles and stimulus type from the timeline variables
+    const numCircles = jsPsych.timelineVariable('numCircles');
+    const stimulusType = jsPsych.timelineVariable('stimulusType');
+    
+    // Determine the side based on the number of circles
+    const side = numCircles === 3 ? 'left' : 'both';
+    
+    // Generate the stimuli using the specified parameters
+    const stimuli = placeAndGenerateStimuli(grid, numCircles, cellWidth, cellHeight, side, stimulusType);
+
+    // Store the generated stimuli in the global variable
+    currentStimuli = stimuli;
+
+    // Log the generated stimuli for debugging
+    console.log('Generated stimuli:', stimuli);
+
+    // Write the stimuli and stimulus type to jsPsych data for later use
+    jsPsych.data.write({ key: 'stimuli', value: stimuli });
+    jsPsych.data.write({ key: 'stimulusType', value: stimulusType });
+    
+    // Return the stimuli to be displayed
+    return stimuli;
   },
   choices: "NO_KEYS",
   background_color: '#FFFFFF',
-  trial_duration: function() {
-      return 100 * jsPsych.timelineVariable('numCircles');
+  trial_duration: function () {
+    // Set the trial duration based on the number of circles
+    return 100 * jsPsych.timelineVariable('numCircles');
   },
   on_start: function (trial) {
-      trial.start_time = performance.now(); // Log start time
-      console.log(`Trial started at ${trial.start_time}`);
+    // Log the start time of the trial
+    trial.start_time = performance.now();
+    console.log(`Trial started at ${trial.start_time}`);
   },
   on_finish: function (data) {
-      const end_time = performance.now(); // Log end time
-      const duration = end_time - data.start_time; // Calculate duration
-      
-      // Get the practice status from the parent timeline
-      const practice = jsPsych.timelineVariable('practice');
+    // Log the end time of the trial and calculate the duration
+    const end_time = performance.now();
+    const duration = end_time - data.start_time;
 
-      jsPsych.data.write({ key: 'actual_trial_duration', value: duration }); // Save duration
-      console.log(`Trial ended at ${end_time}`);
-      console.log(`Trial duration set: ${100 * jsPsych.timelineVariable('numCircles')} ms, Actual duration: ${duration} ms`);
-      
-      const trialData = {
-        practice: practice,
-        nStimuli: jsPsych.timelineVariable('numCircles', true),
-        stimulusType: jsPsych.timelineVariable('stimulusType', true),
-        trialNumberThisBlock: counters.trialNumberThisBlock,
-        trialNumberOverall: counters.trialNumberOverall,
-        blockNumber: counters.blockNumber,
-        segmentNumber: counters.segmentNumber,
-        subjectID: subjectID,
-        whichStimuliFirst: expInfo.DESIGN.participantGroup,
-        areTrialsRandomOrSystematic: expInfo.DESIGN.participantBlockType,
-        dualOrSingleSetFirst: expInfo.DESIGN.participantBlockOrder
+    // Get the practice status from the parent timeline
+    const practice = jsPsych.timelineVariable('practice');
+
+    // Write the actual trial duration to jsPsych data
+    jsPsych.data.write({ key: 'actual_trial_duration', value: duration });
+    console.log(`Trial ended at ${end_time}`);
+    console.log(`Trial duration set: ${100 * jsPsych.timelineVariable('numCircles')} ms, Actual duration: ${duration} ms`);
+
+    // Retrieve the stimuli from the global variable
+    const stimuli = currentStimuli;
+    console.log('Retrieved stimuli:', stimuli);
+
+    // Check if stimuli data is available
+    if (!stimuli) {
+      console.error('Stimuli data not found');
+      return;
+    }
+
+    // Define types for positions, colors, and orientations
+    type Position = { startX: number; startY: number };
+    type Color = string;
+    type Orientation = { x2: number; y2: number };
+
+    // Initialize variables for storing positions, colors, and orientations
+    let allPositions: Position[] = [];
+    let allColors: Color[] = [];
+    let allOrientations: Orientation[] = [];
+
+    // Process each stimulus and store relevant data based on its type
+    stimuli.forEach((stimulus: Stimulus) => {
+      if (stimulus.obj_type === 'circle') {
+        // Store positions for circles
+        allPositions.push({ startX: stimulus.startX!, startY: stimulus.startY! });
+        // Store original color if available
+        if (stimulus.original_color) {
+          allColors.push(stimulus.original_color);
+        }
+      } else if (stimulus.obj_type === 'line') {
+        // Store orientations for lines
+        allOrientations.push({ x2: stimulus.x2!, y2: stimulus.y2! });
+      }
+    });
+
+    // Convert arrays to strings for storage, or keep them as arrays based on preference
+    const allPositionsStr = JSON.stringify(allPositions);
+    const allColorsStr = JSON.stringify(allColors);
+    const allOrientationsStr = JSON.stringify(allOrientations);
+
+    // Prepare the trial data object with various information
+    const trialData = {
+      practice: practice,
+      nStimuli: jsPsych.timelineVariable('numCircles', true),
+      stimulusType: jsPsych.timelineVariable('stimulusType', true),
+      trialNumberThisBlock: counters.trialNumberThisBlock,
+      trialNumberOverall: counters.trialNumberOverall,
+      blockNumber: counters.blockNumber,
+      segmentNumber: counters.segmentNumber,
+      subjectID: subjectID,
+      whichStimuliFirst: expInfo.DESIGN.participantGroup,
+      areTrialsRandomOrSystematic: expInfo.DESIGN.participantBlockType,
+      dualOrSingleSetFirst: expInfo.DESIGN.participantBlockOrder,
+      allPositions: allPositionsStr || null,
+      allColors: allColorsStr || null,
+      allOrientations: allOrientationsStr || null
     };
 
     // Save the trial data
     storeTrialData(trialData);
   }
 };
+
+
 
 
 // The following are just some tools for timeline construction of the single set trial
@@ -166,66 +234,102 @@ const orientationWheelNode = {
     conditional_function: shouldDisplayOrientationWheel
 };
 
-// This is the actual timeline logic for the single set trial
+// Configuration for a single set trial
 const singleSetTrialConfig = {
-    timeline: [
-        displayStimuliSingleSet,
-        {
-            timeline: [
-                {
-                    timeline: [blankScreenStageOneLong],
-                    conditional_function: function() {
-                        return (jsPsych.timelineVariable('stimulusType', true) === 'circle' && expInfo.DESIGN.participantGroup === 'colorFirst') ||
-                               (jsPsych.timelineVariable('stimulusType', true) === 'circle_with_line' && expInfo.DESIGN.participantGroup === 'orientationFirst');
-                    }
-                },
-                {
-                    timeline: [blankScreenStageOneShort],
-                    conditional_function: function() {
-                        return !((jsPsych.timelineVariable('stimulusType', true) === 'circle' && expInfo.DESIGN.participantGroup === 'colorFirst') ||
-                                 (jsPsych.timelineVariable('stimulusType', true) === 'circle_with_line' && expInfo.DESIGN.participantGroup === 'orientationFirst'));
-                    }
-                }
-            ]
-        },
-        colorWheelNode,
-        orientationWheelNode,
-        blankScreenStageTwo,
-        {
-            timeline: [
-                createColorWheelStage(
-                    'Display Second Color Wheel',
-                    jsPsych.timelineVariable('stimulusType'),
-                    'stimuli', // Data key for single set block
-                    function (data) {
-                        resetGrid(grid, numColumns, numRows);
-                    }
-                )
-            ],
-            conditional_function: shouldDisplayColorWheel
-        },
-        {
-            timeline: [
-                createOrientationWheelStage(
-                    'Display Second Orientation Wheel',
-                    jsPsych.timelineVariable('stimulusType'),
-                    'stimuli', // Data key for single set block
-                    function (data) {
-                        resetGrid(grid, numColumns, numRows);
-                    }
-                )
-            ],
-            conditional_function: shouldDisplayOrientationWheel
-        },
-        blankScreenStageThree
-    ],
-    timeline_variables: [
-        { numCircles: 3, stimulusType: 'circle' },
-        // { numCircles: 3, stimulusType: 'circle_with_line' },
-        // { numCircles: 6, stimulusType: 'circle' },
-        // { numCircles: 6, stimulusType: 'circle_with_line' }
-    ],
+  timeline: [
+      // Step 1: Display initial stimuli
+      displayStimuliSingleSet,
+
+      // Step 2: Conditional display of a blank screen (long or short) based on stimulus type and participant group
+      {
+          timeline: [
+              // Display long blank screen if conditions are met
+              {
+                  timeline: [blankScreenStageOneLong],
+                  conditional_function: function() {
+                      return (jsPsych.timelineVariable('stimulusType', true) === 'circle' && expInfo.DESIGN.participantGroup === 'colorFirst') ||
+                             (jsPsych.timelineVariable('stimulusType', true) === 'circle_with_line' && expInfo.DESIGN.participantGroup === 'orientationFirst');
+                  }
+              },
+              // Display short blank screen if conditions are not met
+              {
+                  timeline: [blankScreenStageOneShort],
+                  conditional_function: function() {
+                      return !((jsPsych.timelineVariable('stimulusType', true) === 'circle' && expInfo.DESIGN.participantGroup === 'colorFirst') ||
+                               (jsPsych.timelineVariable('stimulusType', true) === 'circle_with_line' && expInfo.DESIGN.participantGroup === 'orientationFirst'));
+                  }
+              }
+          ]
+      },
+
+      // Step 3: Display the color wheel node
+      colorWheelNode,
+
+      // Step 4: Display the orientation wheel node
+      orientationWheelNode,
+
+      // Step 5: Display a second blank screen stage
+      blankScreenStageTwo,
+
+      // Step 6: Conditional display of the second color wheel stage
+      {
+          timeline: [
+              {
+                  timeline: [
+                      createColorWheelStage(
+                          'Display Second Color Wheel',
+                          jsPsych.timelineVariable('stimulusType'),
+                          'stimuli', // Data key for single set block
+                          function (data) {
+                              resetGrid(grid, numColumns, numRows); // Reset the grid after displaying the color wheel
+                          }
+                      ),
+                      {
+                        type: jsPsychCallFunction,
+                        func: incrementCounters
+                      },
+                  ],
+              }
+          ],
+          conditional_function: shouldDisplayColorWheel // Function to determine if the second color wheel should be displayed
+      },
+
+      // Step 7: Conditional display of the second orientation wheel stage
+      {
+          timeline: [
+              {
+                  timeline: [
+                      createOrientationWheelStage(
+                          'Display Second Orientation Wheel',
+                          jsPsych.timelineVariable('stimulusType'),
+                          'stimuli', // Data key for single set block
+                          function (data) {
+                              resetGrid(grid, numColumns, numRows); // Reset the grid after displaying the orientation wheel
+                          }
+                      ),
+                      {
+                        type: jsPsychCallFunction,
+                        func: incrementCounters
+                      },
+                  ],
+              }
+          ],
+          conditional_function: shouldDisplayOrientationWheel // Function to determine if the second orientation wheel should be displayed
+      },
+
+      // Step 8: Display a third blank screen stage
+      blankScreenStageThree
+  ],
+
+  // Define the variables for the timeline
+  timeline_variables: [
+      { numCircles: 3, stimulusType: 'circle' }, // 3 circles without lines
+      { numCircles: 3, stimulusType: 'circle_with_line' }, // 3 circles with lines
+      { numCircles: 6, stimulusType: 'circle' }, // 6 circles without lines
+      { numCircles: 6, stimulusType: 'circle_with_line' } // 6 circles with lines
+  ],
 };
+
 
 
 // Define the configurations for practice and actual trials
@@ -444,13 +548,18 @@ const single_set_trial = {
         timeline: [
             displayStimuliDualSet,
             blankScreenStageOneShort,
+            {
+              type: jsPsychCallFunction,
+              func: incrementCounters
+            },
             systematicTimeline,
             randomTimeline,
+
             blankScreenStageThree // Include blankScreenStageThree at the end
         ],
         timeline_variables: [
             { randomStimulusType: 'circle' },
-            // { randomStimulusType: 'circle_with_line' }
+            { randomStimulusType: 'circle_with_line' }
         ]
     };
     
@@ -490,12 +599,15 @@ const single_set_trial = {
       // Dual Set First
       timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
       timeline.push(dual_set_trial_practice);
-      timeline.push(practiceOver);
+      timeline.push({
+        timeline: [practiceOver],
+        on_timeline_finish: resetTrialinBlockCounter
+      });
       
       for (let i = 0; i < 3; i++) {
           timeline.push({
               timeline: [dual_set_trial, createQuickBreakScreen()],
-              on_timeline_finish: incrementCounters
+              on_timeline_finish: incrementSegmentNumber
           });
       }
   
@@ -507,24 +619,30 @@ const single_set_trial = {
       
       timeline.push(singleSetWarning);
       timeline.push(single_set_trial_practice);
-      timeline.push(practiceOver);
+      timeline.push({
+        timeline: [practiceOver],
+        on_timeline_finish: resetTrialinBlockCounter
+      });
       
       for (let i = 0; i < 3; i++) {
           timeline.push({
               timeline: [single_set_trial, createQuickBreakScreen()],
-              on_timeline_finish: incrementCounters
+              on_timeline_finish: incrementSegmentNumber
           });
       }
   } else {
       // Single Set First
       timeline.push(singleSetWarning);
       timeline.push(single_set_trial_practice);
-      timeline.push(practiceOver);
+      timeline.push({
+        timeline: [practiceOver],
+        on_timeline_finish: resetTrialinBlockCounter
+      });
       
       for (let i = 0; i < 3; i++) {
           timeline.push({
               timeline: [single_set_trial, createQuickBreakScreen()],
-              on_timeline_finish: incrementCounters
+              on_timeline_finish: incrementSegmentNumber
           });
       }
   
@@ -536,12 +654,15 @@ const single_set_trial = {
       
       timeline.push(getDualSetWarning(expInfo.DESIGN.participantBlockType));
       timeline.push(dual_set_trial_practice);
-      timeline.push(practiceOver);
+      timeline.push({
+        timeline: [practiceOver],
+        on_timeline_finish: resetTrialinBlockCounter
+      });
       
       for (let i = 0; i < 3; i++) {
           timeline.push({
               timeline: [dual_set_trial, createQuickBreakScreen()],
-              on_timeline_finish: incrementCounters
+              on_timeline_finish: incrementSegmentNumber
           });
       }
   }

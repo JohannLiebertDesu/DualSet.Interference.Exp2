@@ -42,3 +42,11 @@ export function resetBlockCounters() {
     counters.segmentNumber = 1;
     counters.blockNumber++;
 }
+
+export function incrementSegmentNumber() {
+    counters.segmentNumber++;
+}
+
+export function resetTrialinBlockCounter() {
+    counters.trialNumberThisBlock = 1;
+}
