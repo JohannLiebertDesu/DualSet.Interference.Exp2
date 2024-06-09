@@ -25,7 +25,7 @@ export function storeTrialData(trialData) {
         allOrientations: trialData.allOrientations || null,
         actualOrientation: trialData.actualOrientation || null,
         selectedOrientation: trialData.selectedOrientation || null,
-        reactionTime: trialData.rt || null,
+        reactionTime: trialData.reactionTime || null,
     };
 
     jsPsych.data.write(dataToStore);
