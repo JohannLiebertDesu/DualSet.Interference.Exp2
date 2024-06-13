@@ -6,7 +6,7 @@ import psychophysics from "@kurokida/jspsych-psychophysics";
 import htmlKeyboardResponse from "@jspsych/plugin-html-keyboard-response";
 
 // Grid logic and stimuli generation
-import { screenWidth, screenHeight, selectRandomCircle, radius, Stimulus } from "./gridAndStimuli";
+import { screenWidth, screenHeight, selectRandomCircle, selectRandomLine, radius, Stimulus } from "./gridAndStimuli";
 
 // Color wheel drawing function
 import { drawColorWheel, outerRadius, ratio, calculateColorFromAngle, getAngleFromCoordinates, getRandomRotationAngle, drawOrientationWheel } from "./drawWheels";
@@ -221,21 +221,23 @@ export const createOrientationWheelStage = (stageName: string, stimulusType: str
       return [];
     }
 
-    const { selectedStimulus, remainingStimuli } = selectRandomCircle(previousStimuli);
+    const { selectedStimulus, remainingStimuli } = selectRandomLine(previousStimuli);
     if (!selectedStimulus) {
-      console.error('No circle stimulus found.');
+      console.error('No line stimulus found.');
       return [];
     }
     jsPsych.data.write({ key: 'stimuli', value: remainingStimuli });
-    console.log(`Selected Circle for ${stageName}:`, selectedStimulus);
+    console.log(`Selected line for ${stageName}:`, selectedStimulus);
 
     selectedStimulusGlobal = selectedStimulus; // Set the global variable
 
-    const centerX: number | undefined = selectedStimulus.startX;
-    const centerY: number | undefined = selectedStimulus.startY;
+    console.log('Selected Stimulus:', selectedStimulus);
+
+    const centerX: number | undefined = selectedStimulus.x1;
+    const centerY: number | undefined = selectedStimulus.y1;
 
     if (centerX === undefined || centerY === undefined) {
-      console.error('Selected stimulus does not have valid startX or startY.');
+      console.error('Selected stimulus does not have valid x1 or y1.');
       return [];
     }
 
@@ -305,11 +307,11 @@ export const createOrientationWheelStage = (stageName: string, stimulusType: str
       }
   
       const actualOrientation = {
-        startX: selectedStimulus.startX,
-        startY: selectedStimulus.startY
+        startX: selectedStimulus.x2,
+        startY: selectedStimulus.y2
       };
       const selectedOrientation = data.selected_line_end;
-      const actualPosition = { startX: selectedStimulus.startX, startY: selectedStimulus.startY };
+      const actualPosition = { startX: selectedStimulus.x1, startY: selectedStimulus.y1 };
   
       const trialData = {
         practice: jsPsych.timelineVariable('practice'),
@@ -348,11 +350,11 @@ export const createOrientationWheelStage = (stageName: string, stimulusType: str
 
         if (selectedStimulusGlobal) { // Check if selectedStimulusGlobal is not null
           const currentStimulus = selectedStimulusGlobal;
-          const centerX: number | undefined = currentStimulus.startX;
-          const centerY: number | undefined = currentStimulus.startY;
+          const centerX: number | undefined = currentStimulus.x1;
+          const centerY: number | undefined = currentStimulus.y1;
 
           if (centerX === undefined || centerY === undefined) {
-            console.error('Selected stimulus does not have valid startX or startY.');
+            console.error('Selected stimulus does not have valid x1 or y1.');
             return;
           }
 

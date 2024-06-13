@@ -235,28 +235,20 @@ export function selectRandomCircle(stimuli) {
     return { selectedStimulus, remainingStimuli };
   }
   
-  
-// Create the grid
-const grid = createGrid(numColumns, numRows);
+  export function selectRandomLine(stimuli) {
+    // Filter to only get lines
+    const lines = stimuli.filter(stim => stim.obj_type === 'line');
+    console.log('Lines:', lines);
 
-// Function to draw the grid on canvas
-export function drawGrid(grid: GridCell[]): HTMLCanvasElement | null {
-    const canvas = document.createElement('canvas');
-    canvas.width = screenWidth;
-    canvas.height = screenHeight;
-    const context = canvas.getContext('2d');
+    // Select a random line
+    const randomIndex = Math.floor(Math.random() * lines.length);
+    const selectedStimulus = lines[randomIndex];
 
-    if (context && cellSize) {
-        grid.forEach(cell => {
-            context.fillStyle = cell.occupied ? 'red' : 'green';
-            context.fillRect(cell.x * cellSize.cellWidth, cell.y * cellSize.cellHeight, cellSize.cellWidth, cellSize.cellHeight);
-            context.strokeRect(cell.x * cellSize.cellWidth, cell.y * cellSize.cellHeight, cellSize.cellWidth, cellSize.cellHeight);
-        });
-        return canvas;
-    } else {
-        console.error('Canvas context or cellSize is null');
-        return null;
-    }
+    // Use the properties of the selected line to remove the line
+    const remainingStimuli = stimuli.filter(stim => {
+        return !(stim.x1 === selectedStimulus.x1 && stim.y1 === selectedStimulus.y1);
+    });
+
+    console.log('remainingStimuli:', remainingStimuli);
+    return { selectedStimulus, remainingStimuli };
 }
-
-
