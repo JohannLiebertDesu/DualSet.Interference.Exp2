@@ -1,8 +1,8 @@
 /**
  * @title DualSet.Interference.Exp1
  * @description Systematically varying the combination possibilities and numbers of 2 sets that need to be memorized, including color patches and orientations. Variations include screen side, mixing or separating the qualitatively different items. Each trial concludes with the reproduction of 2 items.
- * @author Chenyu Li, ChatGPT and Noah Rischert
- * @version 0.2.1
+ * @author Noah Rischert, ChatGPT, Chenyu Li and ChatGPT 4o
+ * @version 1.0.0
  *
  *
  * @assets assets/
@@ -634,13 +634,13 @@ const displayStimuliDualSet = {
     /************************************** Procedure **************************************/
 
 
-    // timeline.push(preload_screen);
-    // timeline.push(welcome_screen);
-    // timeline.push(consent_screen);
-    // timeline.push(notice_screen);
-    // timeline.push(browser_screen);
-    // timeline.push(fullMode_screen);
-    // timeline.push(instructionSlidesConfig);
+    timeline.push(preload_screen);
+    timeline.push(welcome_screen);
+    timeline.push(consent_screen);
+    timeline.push(notice_screen);
+    timeline.push(browser_screen);
+    timeline.push(fullMode_screen);
+    timeline.push(instructionSlidesConfig);
 
     // Here, we decide on the order of the blocks; do we first show the dual set or the single set? This depends on the participantBlockOrder
     if (expInfo.DESIGN.participantBlockOrder === 'dualSetFirst') {
@@ -716,9 +716,9 @@ const displayStimuliDualSet = {
   }
   
 
-    // timeline.push(survey_screen);
-    // timeline.push(debrief_screen);
-    // timeline.push(closeFullScreen);
+    timeline.push(survey_screen);
+    timeline.push(debrief_screen);
+    timeline.push(closeFullScreen);
     console.log("Final Timeline: ", timeline);
 
     // Initialize and run the experiment
