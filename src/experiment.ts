@@ -634,13 +634,13 @@ const displayStimuliDualSet = {
     /************************************** Procedure **************************************/
 
 
-    // timeline.push(preload_screen);
-    // timeline.push(welcome_screen);
-    // timeline.push(consent_screen);
-    // timeline.push(notice_screen);
-    // timeline.push(browser_screen);
-    // timeline.push(fullMode_screen);
-    // timeline.push(instructionSlidesConfig);
+    timeline.push(preload_screen);
+    timeline.push(welcome_screen);
+    timeline.push(consent_screen);
+    timeline.push(notice_screen);
+    timeline.push(browser_screen);
+    timeline.push(fullMode_screen);
+    timeline.push(instructionSlidesConfig);
 
     // Here, we decide on the order of the blocks; do we first show the dual set or the single set? This depends on the participantBlockOrder
     if (expInfo.DESIGN.participantBlockOrder === 'dualSetFirst') {
@@ -716,9 +716,9 @@ const displayStimuliDualSet = {
   }
   
 
-    // timeline.push(survey_screen);
-    // timeline.push(debrief_screen);
-    // timeline.push(closeFullScreen);
+    timeline.push(survey_screen);
+    timeline.push(debrief_screen);
+    timeline.push(closeFullScreen);
     console.log("Final Timeline: ", timeline);
 
     // Initialize and run the experiment

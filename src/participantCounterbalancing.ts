@@ -1,3 +1,4 @@
+declare const jatos: any;
 const n = 50;
 let participantID: number | null = null;
 let subjects: number[] = [];
