@@ -180,11 +180,11 @@ export const TEXT = {
 
   completedOffline: {
     en: `<div class="main">
-          <p class="body-center">Congratulation!(Offline Mode)</p>
+          <p class="body-center">Congratulations!(Offline Mode)</p>
           <p class="body-center">
           You have successfully completed the experiment while in offline mode.
           The data is automatically downloaded and can be found in your download folder.
-          Please sent the data to the researcher via email.
+          Please send the data to the researcher via email.
           </p>
           </div>`,
     de: `<div class="main" lang="de">

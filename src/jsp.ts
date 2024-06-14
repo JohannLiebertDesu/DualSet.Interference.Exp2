@@ -40,6 +40,7 @@ export const jsPsych = initJsPsych({
     let internet = RUN_JATOS && navigator.onLine ? "online" : "offline";
     let results = varSystem.FAILED_ATTENTION_CHECK ? "fail" : "success";
     let finalStatus = `${internet}_${results}`;
+    console.log("finalStatus: ", finalStatus);
 
     // return varied completion codes and screen based on the final status
     switch (finalStatus) {
