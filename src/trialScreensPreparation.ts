@@ -13,8 +13,8 @@ import { drawColorWheel, outerRadius, ratio, calculateColorFromAngle, getAngleFr
 
 // Data saving code
 import { storeTrialData } from "./data/dataStorage"; 
-import { subjectID } from "./participantCounterbalancing";
-import { counters, expInfo } from "./settings";
+import { subjectID } from "./jsp";
+import { counters, DESIGN } from "./settings";
 
 
 function createBlankScreenStage(duration: number, stageName: string) {
@@ -132,9 +132,9 @@ export const createColorWheelStage = (stageName, stimulusType, dataKey, onFinish
       blockNumber: counters.blockNumber,
       segmentNumber: counters.segmentNumber,
       subjectID: subjectID,
-      whichStimuliFirst: expInfo.DESIGN.participantGroup,
-      areTrialsRandomOrSystematic: expInfo.DESIGN.participantBlockType,
-      dualOrSingleSetFirst: expInfo.DESIGN.participantBlockOrder,
+      whichStimuliFirst: DESIGN.participantGroup,
+      areTrialsRandomOrSystematic: DESIGN.participantBlockType,
+      dualOrSingleSetFirst: DESIGN.participantBlockOrder,
       stimulusType: stimulusType,  // Use the parameter value directly
       reactionTime: reactionTime || null,
       actualColor: actualColor || null,
@@ -320,9 +320,9 @@ export const createOrientationWheelStage = (stageName: string, stimulusType: str
         blockNumber: counters.blockNumber,
         segmentNumber: counters.segmentNumber,
         subjectID: subjectID,
-        whichStimuliFirst: expInfo.DESIGN.participantGroup,
-        areTrialsRandomOrSystematic: expInfo.DESIGN.participantBlockType,
-        dualOrSingleSetFirst: expInfo.DESIGN.participantBlockOrder,
+        whichStimuliFirst: DESIGN.participantGroup,
+        areTrialsRandomOrSystematic: DESIGN.participantBlockType,
+        dualOrSingleSetFirst: DESIGN.participantBlockOrder,
         stimulusType: stimulusType,  // Use the parameter value directly
         reactionTime: reactionTime || null,
         actualPosition: actualPosition || null,

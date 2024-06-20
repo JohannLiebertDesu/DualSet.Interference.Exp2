@@ -1,5 +1,5 @@
-import { subjectID } from '../participantCounterbalancing';
-import { expInfo } from '../settings';
+import { subjectID } from '../jsp';
+import { DESIGN } from '../settings';
 import { jsPsych } from "../jsp";
 import { counters } from '../settings';
 
@@ -7,9 +7,9 @@ import { counters } from '../settings';
 export function storeTrialData(trialData) {
     const dataToStore = {
         subjectID: subjectID,
-        whichStimuliFirst: expInfo.DESIGN.participantGroup,
-        areTrialsRandomOrSystematic: expInfo.DESIGN.participantBlockType,
-        dualOrSingleSetFirst: expInfo.DESIGN.participantBlockOrder,
+        whichStimuliFirst: DESIGN.participantGroup,
+        areTrialsRandomOrSystematic: DESIGN.participantBlockType,
+        dualOrSingleSetFirst: DESIGN.participantBlockOrder,
         practice: trialData.practice,
         blockNumber: counters.blockNumber,
         segmentNumber: counters.segmentNumber,

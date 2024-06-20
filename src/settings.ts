@@ -1,10 +1,6 @@
 /**
  * This file contains the settings for the experiment.
  */
-
-
-
-import { subjectID } from './participantCounterbalancing';
 import { setCSS } from './task-fun/setCSS';
 setCSS();
 
@@ -15,18 +11,11 @@ export const counters = {
   segmentNumber: 1
 };
 
-
-function assignParticipantGroup(id) {
+// Function to assign participant to a group based on their ID
+export function assignParticipantGroup(id: number): Combination {
   const groups = ['colorFirst', 'orientationFirst'];
   const blockTypes = ['random', 'systematic'];
   const blockOrders = ['dualSetFirst', 'singleSetFirst'];
-
-  // Define the type for combinations
-  type Combination = {
-    group: string;
-    blockType: string;
-    blockOrder: string;
-  };
 
   // Generate all possible combinations of groups, block types, and block orders
   const combinations: Combination[] = [];
@@ -38,52 +27,46 @@ function assignParticipantGroup(id) {
     }
   }
 
-
   // Assign based on participant ID using modulo to loop through combinations
   const combination = combinations[(id - 1) % combinations.length];
 
   return combination;
 }
 
-const { group: participantGroup, blockType: participantBlockType, blockOrder: participantBlockOrder } = assignParticipantGroup(subjectID);
+// Define the Combination type
+type Combination = {
+  group: string;
+  blockType: string;
+  blockOrder: string;
+};
 
+// Define the DESIGN type
+type Design = {
+  participantGroup: string | null;
+  participantBlockType: string | null;
+  participantBlockOrder: string | null;
+};
 
+// Export the DESIGN object with initial null values
+export let DESIGN: Design = {
+  participantGroup: null,
+  participantBlockType: null,
+  participantBlockOrder: null,
+};
 
 export const expInfo = {
   // settings for the experiment
   TITLE: "DualSet.Interference.Exp1",
   LANG: "en", // the default language of the experiment
 
-  DESIGN: {
-    participantGroup: participantGroup,
-    participantBlockType: participantBlockType,
-    participantBlockOrder: participantBlockOrder,
-    nBlocks: 1, // number of blocks
-    nTrialsPerBlock: 4, // number of total trials in a block
-    itemTypes: ["dot", "clock"],
-    setSize: [3, 6],
-    get nTrialsPerCondition() {
-      return this.nTrialsPerBlock / this.setSize.length / this.itemTypes.length;
-    }, // number of experiment trials for each condition
-    DualSet: false,
-    OrientationGroup: false,
-  },
-  
-  // settings for each trial
-  TIMING: {
-    EncodingDurations: {
-      short: 1000,
-      medium: 2000,
-      long: 2300,
-    },
-  },
-
   // when using Prolific, you can set customized completion codes for different situations
   // e.g., when participants complete the experiment, or when they fail the attention check
   // you can set them here and use them in the end of the experiment (jsp.ts)
   CODES: {
-    SUCCESS: "success", // the code for a successfully completion of the experiment
-    FAIL: "fail", // the code for the failed experiment
+    SUCCESS: "C1IEJ2YE", // the code for a successfully completion of the experiment
+    OFFLINE: "C1JZ9NKH", // the code for the offline situation
+    FAILED_ATTENTION: "CGHTN2LG", // the code for the failed experiment
+    FAILED_OTHERS: "CCWBM3SE", // the code for other failed situations (e.g., failed to resize the window)
     // You can specify the codes for different situations here.
   },
   
@@ -113,5 +96,5 @@ export const varSystem = {
   MAX_BLUR: 3, // the maximum number of times participants can leave the browser
   LOOP: true, // a switch to control whether participants need to read the instruction and practice again
   RUN_TIMER: false, // a switch to control the countdown timer
-  FAILED_ATTENTION_CHECK: false,
+  STATUS: "success", // the status of the experiment
 };
