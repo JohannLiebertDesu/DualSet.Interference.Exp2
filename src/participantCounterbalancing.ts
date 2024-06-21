@@ -3,7 +3,6 @@ declare const jatos: any;
 const n = 50;
 let participantID: number | null = null;
 let subjects: number[] = [];
-let subjectsCompleted: number[] = [];
 
 // Function to initialize the subject lists if not already done
 export function initializeSubjectsList() {
@@ -12,7 +11,7 @@ export function initializeSubjectsList() {
           for (let i = 1; i <= n; ++i) {
               subjects.push(i);
           }
-          jatos.batchSession.set({"subjects": subjects, "subjects_completed": []});
+          jatos.batchSession.set("subjects", subjects);
       } else {
           subjects = jatos.batchSession.get("subjects");
       }
@@ -41,12 +40,26 @@ export function assignSubjectID() {
   return participantID;
 }
 
-
 // Function to mark a subject as completed
-export function markSubjectAsCompleted() {
-    if (typeof jatos !== 'undefined' && participantID !== null) {
-        subjectsCompleted.push(participantID);
-        jatos.batchSession.set("subjects_completed", subjectsCompleted);
-    }
+export async function markSubjectAsCompleted() {
+  if (typeof jatos !== 'undefined' && participantID !== null) {
+      // Fetch the current list of completed subjects from the batch session
+      let subjectsCompleted = jatos.batchSession.get("subjects_completed") || [];
+
+      // Ensure subjectsCompleted is an array
+      if (!Array.isArray(subjectsCompleted)) {
+          subjectsCompleted = [];
+      }
+
+      // Add the current participant ID to the list
+      let newParticipant = `Participant${participantID}Done`;
+      subjectsCompleted.push(newParticipant);
+
+      // Wait for 50ms
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Update the batch session with the new list
+      jatos.batchSession.set("subjects_completed", subjectsCompleted);
+  }
 }
 

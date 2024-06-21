@@ -209,9 +209,6 @@ const displayStimuliSingleSet = {
   }
 };
 
-
-
-
 // The following are just some tools for timeline construction of the single set trial
 
 const shouldDisplayColorWheel = () => {
@@ -649,10 +646,13 @@ const displayStimuliDualSet = {
     let empty_trial = {
       type: HtmlKeyboardResponsePlugin,
       stimulus: "",
-      trial_duration: 50,
+      trial_duration: 150, // Increase the duration to account for the pause
       on_start: function() {
-          initializeSubjectsList();
-          console.log("Subjects list initialized.");
+        initializeSubjectsList();
+        console.log("Subjects list initialized.");
+    
+        // Pause for 100ms, because even with all my efforts to separate the initialization of the subjects from the rest of the experiment, the code still has too little time in between the two times it tries to access the batch session data from jatos.
+        return new Promise(resolve => setTimeout(resolve, 100));
       },
       on_finish: function() {
           // Initialize subjects and get the participant ID
@@ -678,13 +678,13 @@ const displayStimuliDualSet = {
     
           var timeline: any[] = [];
           
-          // timeline.push(preload_screen);
-          // timeline.push(welcome_screen);
-          // timeline.push(consent_screen);
-          // timeline.push(notice_screen);
-          // timeline.push(browser_screen);
-          // timeline.push(fullMode_screen);
-          // timeline.push(instructionSlidesConfig);
+          timeline.push(preload_screen);
+          timeline.push(welcome_screen);
+          timeline.push(consent_screen);
+          timeline.push(notice_screen);
+          timeline.push(browser_screen);
+          timeline.push(fullMode_screen);
+          timeline.push(instructionSlidesConfig);
 
           // Here, we decide on the order of the blocks; do we first show the dual set or the single set? This depends on the participantBlockOrder
           if (DESIGN.participantBlockOrder === 'dualSetFirst') {
@@ -763,9 +763,9 @@ const displayStimuliDualSet = {
         }
         
 
-          // timeline.push(survey_screen);
-          // timeline.push(debrief_screen);
-          // timeline.push(closeFullScreen);
+          timeline.push(survey_screen);
+          timeline.push(debrief_screen);
+          timeline.push(closeFullScreen);
 
           console.log("Final Timeline: ", timeline);
 
