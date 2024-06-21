@@ -1,7 +1,7 @@
 // jsPsych official plugin
 import { initJsPsych } from "jspsych";
 
-import { initializeSubjects, markSubjectAsCompleted } from "./participantCounterbalancing";
+import { markSubjectAsCompleted } from "./participantCounterbalancing";
 
 // Basic Functions
 import { trackInteractions } from "./task-fun/attentionCheck";

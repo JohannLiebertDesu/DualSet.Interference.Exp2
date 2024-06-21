@@ -43,7 +43,7 @@ import { blankScreenStageOneShort, blankScreenStageOneLong, blankScreenStageTwo,
 
 import { create } from "domain";
 
-import { initializeSubjects } from "./participantCounterbalancing";
+import { assignSubjectID, initializeSubjectsList } from "./participantCounterbalancing";
 
 // Import the data storage function
 import { storeTrialData, incrementCounters, resetBlockCounters, incrementSegmentNumber, resetTrialinBlockCounter } from './data/dataStorage';
@@ -739,28 +739,33 @@ const displayStimuliDualSet = {
     let empty_trial = {
       type: HtmlKeyboardResponsePlugin,
       stimulus: "",
-      trial_duration: 5000,  
+      trial_duration: 50,
+      on_start: function() {
+          initializeSubjectsList();
+          console.log("Subjects list initialized.");
+      },
       on_finish: function() {
-        // Initialize subjects and get the participant ID
-        subjectID = initializeSubjects();
-    
-        if (subjectID !== null) {
-          // Assign participant to a group using their ID
-          const { group, blockType, blockOrder } = assignParticipantGroup(subjectID);
-    
-          // Update DESIGN object with participant's group info
-          DESIGN.participantGroup = group;
-          DESIGN.participantBlockType = blockType;
-          DESIGN.participantBlockOrder = blockOrder;
-          
-        } else {
-          throw new Error("Failed to initialize participant ID.");
-        }
-        console.log("subjectID: ", subjectID);
-        // Add the large timeline to the main timeline
-        jsPsych.addNodeToEndOfTimeline({ timeline: timeline }, function() {});
+          // Initialize subjects and get the participant ID
+          let subjectID = assignSubjectID();
+  
+          if (subjectID !== null) {
+              // Assign participant to a group using their ID
+              const { group, blockType, blockOrder } = assignParticipantGroup(subjectID);
+  
+              // Update DESIGN object with participant's group info
+              DESIGN.participantGroup = group;
+              DESIGN.participantBlockType = blockType;
+              DESIGN.participantBlockOrder = blockOrder;
+  
+          } else {
+              throw new Error("Failed to initialize participant ID.");
+          }
+          console.log("subjectID: ", subjectID);
+  
+          // Add the large timeline to the main timeline
+          jsPsych.addNodeToEndOfTimeline({ timeline: timeline }, function() {});
       }
-    };
+  };
 
     main_timeline.push(empty_trial);
 
