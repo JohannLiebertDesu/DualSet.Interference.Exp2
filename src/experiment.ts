@@ -2,7 +2,7 @@
  * @title DualSet.Interference.Exp1
  * @description Systematically varying the combination possibilities and numbers of 2 sets that need to be memorized, including color patches and orientations. Variations include screen side, mixing or separating the qualitatively different items. Each trial concludes with the reproduction of 2 items.
  * @author Noah Rischert, Chenyu Li and ChatGPT 4o
- * @version 1.0.1
+ * @version 2.0.2
  *
  *
  * @assets assets/
@@ -351,7 +351,7 @@ const single_set_trial_practice = {
   ...singleSetTrialConfig,
   sample: {
       type: 'fixed-repetitions',
-      size: 1 // Adjust size for practice trials
+      size: 1 // Adjust size for practice trials, since we have 4 timeline variables which are repeated 3 times, we get 12 practice trials in total.
   },
   timeline_variables: singleSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: true})) // Set practice status to true for practice trials
 };
@@ -360,7 +360,7 @@ const single_set_trial = {
   ...singleSetTrialConfig,
   sample: {
       type: 'fixed-repetitions',
-      size: 1 // Adjust size for actual trials
+      size: 1 // Adjust size for actual trials, since we have 4 timeline variables which are repeated 8 times, we get 32 actual trials in total.
   },
   timeline_variables: singleSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: false})) // Set practice status to false for actual trials
 };
@@ -369,9 +369,6 @@ const single_set_trial = {
       
             
 /************************************** Block 2 preparation **************************************/
-
-const participantGroup = DESIGN.participantGroup;
-const participantBlockType = DESIGN.participantBlockType;
 
 // Display stimuli for the dual set
 
@@ -384,7 +381,7 @@ const displayStimuliDualSet = {
     };
 
     // Determine the first and second stimulus types based on participant group
-    const firstStimulusType = (participantGroup === 'colorFirst') ? 'circle' : 'circle_with_line';
+    const firstStimulusType = (DESIGN.participantGroup === 'colorFirst') ? 'circle' : 'circle_with_line';
     const secondStimulusType = (firstStimulusType === 'circle') ? 'circle_with_line' : 'circle';
 
     // Generate stimuli for both sides
@@ -439,7 +436,7 @@ const displayStimuliDualSet = {
   },
   on_finish: function (data) {
     // Store the stimuli information in the trial data
-    const firstStimulusType = (participantGroup === 'colorFirst') ? 'circle' : 'circle_with_line';
+    const firstStimulusType = (DESIGN.participantGroup === 'colorFirst') ? 'circle' : 'circle_with_line';
     const secondStimulusType = (firstStimulusType === 'circle') ? 'circle_with_line' : 'circle';
     
     // Get the practice status from the parent timeline
@@ -568,7 +565,7 @@ const displayStimuliDualSet = {
       )
     ],
     conditional_function: function() {
-      return participantBlockType === 'systematic';
+      return DESIGN.participantBlockType === 'systematic';
     }
   };
   
@@ -601,7 +598,7 @@ const displayStimuliDualSet = {
       )
     ],
     conditional_function: function() {
-      return participantBlockType === 'random';
+      return DESIGN.participantBlockType === 'random';
     }
   };
   
@@ -630,7 +627,7 @@ const displayStimuliDualSet = {
     ...dualSetTrialConfig,
     sample: {
         type: 'fixed-repetitions',
-        size: 1 // Adjust size for practice trials
+        size: 1 // Adjust size for practice trials, since we have 2 timeline variables which are repeated 6 times, we get 12 practice trials in total.
     },
     timeline_variables: dualSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: true})) // Set practice status to true for practice trials
   };
@@ -639,7 +636,7 @@ const displayStimuliDualSet = {
     ...dualSetTrialConfig,
     sample: {
         type: 'fixed-repetitions',
-        size: 1 // Adjust size for actual trials
+        size: 1 // Adjust size for actual trials, since we have 2 timeline variables which are repeated 16 times, we get 32 actual trials in total.
     },
     timeline_variables: dualSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: false})) // Set practice status to false for actual trials
   };
@@ -647,93 +644,6 @@ const displayStimuliDualSet = {
 
     /************************************** Procedure **************************************/
 
-    var timeline: any[] = [];
-
-    timeline.push(preload_screen);
-    timeline.push(welcome_screen);
-    timeline.push(consent_screen);
-    timeline.push(notice_screen);
-    timeline.push(browser_screen);
-    timeline.push(fullMode_screen);
-    timeline.push(instructionSlidesConfig);
-
-    // Here, we decide on the order of the blocks; do we first show the dual set or the single set? This depends on the participantBlockOrder
-    if (DESIGN.participantBlockOrder === 'dualSetFirst') {
-      // Dual Set First
-      timeline.push(getDualSetWarning(DESIGN.participantBlockType));
-      timeline.push(dual_set_trial_practice);
-      timeline.push({
-        timeline: [practiceOver],
-        on_timeline_finish: resetTrialinBlockCounter
-      });
-      
-      for (let i = 0; i < 3; i++) {
-          timeline.push({
-              timeline: [dual_set_trial, createQuickBreakScreen()],
-              on_timeline_finish: incrementSegmentNumber
-          });
-      }
-  
-      // Reset counters after the dual set block
-      timeline.push({
-          type: jsPsychCallFunction,
-          func: resetBlockCounters
-      });
-      
-      timeline.push(singleSetWarning);
-      timeline.push(single_set_trial_practice);
-      timeline.push({
-        timeline: [practiceOver],
-        on_timeline_finish: resetTrialinBlockCounter
-      });
-      
-      for (let i = 0; i < 3; i++) {
-          timeline.push({
-              timeline: [single_set_trial, createQuickBreakScreen()],
-              on_timeline_finish: incrementSegmentNumber
-          });
-      }
-  } else {
-      // Single Set First
-      timeline.push(singleSetWarning);
-      timeline.push(single_set_trial_practice);
-      timeline.push({
-        timeline: [practiceOver],
-        on_timeline_finish: resetTrialinBlockCounter
-      });
-      
-      for (let i = 0; i < 3; i++) {
-          timeline.push({
-              timeline: [single_set_trial, createQuickBreakScreen()],
-              on_timeline_finish: incrementSegmentNumber
-          });
-      }
-  
-      // Reset counters after the single set block
-      timeline.push({
-          type: jsPsychCallFunction,
-          func: resetBlockCounters
-      });
-      
-      timeline.push(getDualSetWarning(DESIGN.participantBlockType));
-      timeline.push(dual_set_trial_practice);
-      timeline.push({
-        timeline: [practiceOver],
-        on_timeline_finish: resetTrialinBlockCounter
-      });
-      
-      for (let i = 0; i < 3; i++) {
-          timeline.push({
-              timeline: [dual_set_trial, createQuickBreakScreen()],
-              on_timeline_finish: incrementSegmentNumber
-          });
-      }
-  }
-  
-
-    timeline.push(survey_screen);
-    timeline.push(debrief_screen);
-    timeline.push(closeFullScreen);
 
     // Define the preload screen timeline
     let empty_trial = {
@@ -756,12 +666,109 @@ const displayStimuliDualSet = {
               DESIGN.participantGroup = group;
               DESIGN.participantBlockType = blockType;
               DESIGN.participantBlockOrder = blockOrder;
+
+              console.log("group: ", group);
+              console.log("blockType: ", blockType);
+              console.log("blockOrder: ", blockOrder);
   
           } else {
               throw new Error("Failed to initialize participant ID.");
           }
           console.log("subjectID: ", subjectID);
-  
+    
+          var timeline: any[] = [];
+          
+          // timeline.push(preload_screen);
+          // timeline.push(welcome_screen);
+          // timeline.push(consent_screen);
+          // timeline.push(notice_screen);
+          // timeline.push(browser_screen);
+          // timeline.push(fullMode_screen);
+          // timeline.push(instructionSlidesConfig);
+
+          // Here, we decide on the order of the blocks; do we first show the dual set or the single set? This depends on the participantBlockOrder
+          if (DESIGN.participantBlockOrder === 'dualSetFirst') {
+            // Dual Set First
+            console.log("Dual Set First");
+            timeline.push(getDualSetWarning(DESIGN.participantBlockType));
+            timeline.push(dual_set_trial_practice);
+            timeline.push({
+              timeline: [practiceOver],
+              on_timeline_finish: resetTrialinBlockCounter
+            });
+            
+            for (let i = 0; i < 3; i++) {
+                timeline.push({
+                    timeline: [dual_set_trial, createQuickBreakScreen()],
+                    on_timeline_finish: incrementSegmentNumber
+                });
+            }
+        
+            // Reset counters after the dual set block
+            timeline.push({
+                type: jsPsychCallFunction,
+                func: resetBlockCounters
+            });
+            
+            timeline.push(singleSetWarning);
+            timeline.push(single_set_trial_practice);
+            timeline.push({
+              timeline: [practiceOver],
+              on_timeline_finish: resetTrialinBlockCounter
+            });
+            
+            for (let i = 0; i < 3; i++) {
+                timeline.push({
+                    timeline: [single_set_trial, createQuickBreakScreen()],
+                    on_timeline_finish: incrementSegmentNumber
+                });
+            }
+        } else {
+            console.log("Single Set First");
+            console.log("participantBlockType: ", DESIGN.participantBlockType)
+            // Single Set First
+            timeline.push(singleSetWarning);
+            timeline.push(single_set_trial_practice);
+            timeline.push({
+              timeline: [practiceOver],
+              on_timeline_finish: resetTrialinBlockCounter
+            });
+            
+            for (let i = 0; i < 3; i++) {
+                timeline.push({
+                    timeline: [single_set_trial, createQuickBreakScreen()],
+                    on_timeline_finish: incrementSegmentNumber
+                });
+            }
+        
+            // Reset counters after the single set block
+            timeline.push({
+                type: jsPsychCallFunction,
+                func: resetBlockCounters
+            });
+            
+            timeline.push(getDualSetWarning(DESIGN.participantBlockType));
+            timeline.push(dual_set_trial_practice);
+            timeline.push({
+              timeline: [practiceOver],
+              on_timeline_finish: resetTrialinBlockCounter
+            });
+            
+            for (let i = 0; i < 3; i++) {
+                timeline.push({
+                    timeline: [dual_set_trial, createQuickBreakScreen()],
+                    on_timeline_finish: incrementSegmentNumber
+                });
+            }
+        }
+        
+
+          // timeline.push(survey_screen);
+          // timeline.push(debrief_screen);
+          // timeline.push(closeFullScreen);
+
+          console.log("Final Timeline: ", timeline);
+
           // Add the large timeline to the main timeline
           jsPsych.addNodeToEndOfTimeline({ timeline: timeline }, function() {});
       }
@@ -769,7 +776,6 @@ const displayStimuliDualSet = {
 
     main_timeline.push(empty_trial);
 
-    console.log("Final Timeline: ", timeline);
     console.log("subjectID: ", subjectID);
 
     // Initialize and run the experiment
