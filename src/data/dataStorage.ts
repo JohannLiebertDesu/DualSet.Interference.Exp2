@@ -1,4 +1,4 @@
-import { subjectID } from '../jsp';
+import { subjectID } from '../experiment';
 import { DESIGN } from '../settings';
 import { jsPsych } from "../jsp";
 import { counters } from '../settings';

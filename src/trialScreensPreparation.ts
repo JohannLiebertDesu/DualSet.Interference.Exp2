@@ -13,7 +13,7 @@ import { drawColorWheel, outerRadius, ratio, calculateColorFromAngle, getAngleFr
 
 // Data saving code
 import { storeTrialData } from "./data/dataStorage"; 
-import { subjectID } from "./jsp";
+import { subjectID } from "./experiment";
 import { counters, DESIGN } from "./settings";
 
 

@@ -4,6 +4,8 @@ This experiment relies on Node.js (https://nodejs.org/en/) and jsPsych-builder p
 
 After completing local testing, the code is designed for compatibility with a jatos server, and relies on code from jatos to determine participant number.
 
+The main execution file is the experiment.ts file. If you are interested in the code, I would recommend starting with that one. 
+
 ## How to run the experiment
 
 - run `npm install` to install dependencies

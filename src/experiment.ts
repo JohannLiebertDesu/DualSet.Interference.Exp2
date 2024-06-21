@@ -8,6 +8,8 @@
  * @assets assets/
  */
 
+// Here we just generally import all the relevant files and packages. The packages are imported from the node_modules folder, and are a central component of jsPsych. Most of them come from the jsPsych library, some of them were made by our lab. 
+
 // import stylesheets (.scss or .css).
 import "../styles/main.scss";
 
@@ -15,10 +17,11 @@ import "../styles/main.scss";
 import preload from "@jspsych/plugin-preload";
 import psychophysics from "@kurokida/jspsych-psychophysics";
 import jsPsychCallFunction from "@jspsych/plugin-call-function";
+import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 
 // Global variables
-import { jsPsych, subjectID } from "./jsp";
-import { DESIGN, counters } from "./settings";
+import { jsPsych } from "./jsp";
+import { DESIGN, counters, assignParticipantGroup } from "./settings";
 
 // screens
 import { welcome_screen } from "./instructions/welcome";
@@ -40,14 +43,22 @@ import { blankScreenStageOneShort, blankScreenStageOneLong, blankScreenStageTwo,
 
 import { create } from "domain";
 
+import { initializeSubjects } from "./participantCounterbalancing";
+
 // Import the data storage function
 import { storeTrialData, incrementCounters, resetBlockCounters, incrementSegmentNumber, resetTrialinBlockCounter } from './data/dataStorage';
-import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 
 // Calculate the grid cell size and create the grid
 export const grid = createGrid(numColumns, numRows);
 export const { cellWidth, cellHeight } = calculateCellSize(screenWidth, screenHeight, numColumns, numRows);
 
+// Initialize subjectID with a type annotation to be number or null
+let subjectID: number | null = null;
+
+// Export subjectID
+export { subjectID };
+
+// Here we come to the main component of the code, the experiment itself. All of it is executed as part of the run function (so jsPsych.run), which is automatically executed when jsPsych is initialized. This happens in the jsp.ts file.
 /**
  * This function will be executed by jsPsych Builder and is expected to run the jsPsych experiment
  *
@@ -61,7 +72,8 @@ export async function run({
     title,
     version,
     }) {
-    // Initialize a main timeline to hold the trials
+
+    // Initialize a main timeline to hold the trials. JsPsych will at the very beginning of the experiment prepare and define all the timelines (which are all considered as unique trials by jsPsych) that we added to the main timeline, and then run them one by one.
     var main_timeline: any[] = [];
   
     // Preload assets
@@ -75,10 +87,13 @@ export async function run({
 
     /************************************** Experiment **************************************/
 
+    // I have separated the code into different sections, one for the preparation of the first kind of block type (single set), and one for the second kind of block type (dual set). Then, in a third part, I push all of the trials i have created into the timelines.
+
     /************************************** Block 1 preparation **************************************/
 
 // Prepare displaying the stimuli for the single set
-// Global variable to store stimuli temporarily
+
+// Global variable to store stimuli temporarily, this kind of stuff is done to appese TypeScript
 let currentStimuli: Stimulus[] = [];
 
 const displayStimuliSingleSet = {
@@ -724,8 +739,24 @@ const displayStimuliDualSet = {
     let empty_trial = {
       type: HtmlKeyboardResponsePlugin,
       stimulus: "",
-      trial_duration: 0,  
+      trial_duration: 5000,  
       on_finish: function() {
+        // Initialize subjects and get the participant ID
+        subjectID = initializeSubjects();
+    
+        if (subjectID !== null) {
+          // Assign participant to a group using their ID
+          const { group, blockType, blockOrder } = assignParticipantGroup(subjectID);
+    
+          // Update DESIGN object with participant's group info
+          DESIGN.participantGroup = group;
+          DESIGN.participantBlockType = blockType;
+          DESIGN.participantBlockOrder = blockOrder;
+          
+        } else {
+          throw new Error("Failed to initialize participant ID.");
+        }
+        console.log("subjectID: ", subjectID);
         // Add the large timeline to the main timeline
         jsPsych.addNodeToEndOfTimeline({ timeline: timeline }, function() {});
       }
@@ -734,7 +765,7 @@ const displayStimuliDualSet = {
     main_timeline.push(empty_trial);
 
     console.log("Final Timeline: ", timeline);
-
+    console.log("subjectID: ", subjectID);
 
     // Initialize and run the experiment
     jsPsych.run(main_timeline);

@@ -16,12 +16,6 @@ import { setCSS } from "./task-fun/setCSS";
 
 setCSS(); // set the CSS style of the experiment
 
-// Initialize subjectID with a type annotation to be number or null
-let subjectID: number | null = null;
-
-// Export subjectID
-export { subjectID };
-
 // Set for the condition in which the data fails to be uploaded to JATOS
 if (RUN_JATOS) {
   //@ts-ignore
@@ -34,24 +28,6 @@ export const jsPsych = initJsPsych({
   // check whether participants leave the window or not during the experiment
   on_interaction_data_update: function () {
     trackInteractions(varSystem, true, jsPsych);
-  },
-
-  on_timeline_start: function () {
-    // Initialize subjects and get the participant ID
-    subjectID = initializeSubjects();
-
-    if (subjectID !== null) {
-      // Assign participant to a group using their ID
-      const { group, blockType, blockOrder } = assignParticipantGroup(subjectID);
-
-      // Update DESIGN object with participant's group info
-      DESIGN.participantGroup = group;
-      DESIGN.participantBlockType = blockType;
-      DESIGN.participantBlockOrder = blockOrder;
-      
-    } else {
-      throw new Error("Failed to initialize participant ID.");
-    }
   },
 
   // after the whole experiment, do the following things
