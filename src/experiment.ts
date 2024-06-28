@@ -2,7 +2,7 @@
  * @title DualSet.Interference.Exp1
  * @description Systematically varying the combination possibilities and numbers of 2 sets that need to be memorized, including color patches and orientations. Variations include screen side, mixing or separating the qualitatively different items. Each trial concludes with the reproduction of 2 items.
  * @author Noah Rischert, Chenyu Li and ChatGPT 4o
- * @version 2.0.2
+ * @version 2.0.1
  *
  *
  * @assets assets/
@@ -348,7 +348,7 @@ const single_set_trial_practice = {
   ...singleSetTrialConfig,
   sample: {
       type: 'fixed-repetitions',
-      size: 1 // Adjust size for practice trials, since we have 4 timeline variables which are repeated 3 times, we get 12 practice trials in total.
+      size: 3 // Adjust size for practice trials, since we have 4 timeline variables which are repeated 3 times, we get 12 practice trials in total.
   },
   timeline_variables: singleSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: true})) // Set practice status to true for practice trials
 };
@@ -357,7 +357,7 @@ const single_set_trial = {
   ...singleSetTrialConfig,
   sample: {
       type: 'fixed-repetitions',
-      size: 1 // Adjust size for actual trials, since we have 4 timeline variables which are repeated 8 times, we get 32 actual trials in total.
+      size: 8 // Adjust size for actual trials, since we have 4 timeline variables which are repeated 8 times, we get 32 actual trials in total.
   },
   timeline_variables: singleSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: false})) // Set practice status to false for actual trials
 };
@@ -624,7 +624,7 @@ const displayStimuliDualSet = {
     ...dualSetTrialConfig,
     sample: {
         type: 'fixed-repetitions',
-        size: 1 // Adjust size for practice trials, since we have 2 timeline variables which are repeated 6 times, we get 12 practice trials in total.
+        size: 6 // Adjust size for practice trials, since we have 2 timeline variables which are repeated 6 times, we get 12 practice trials in total.
     },
     timeline_variables: dualSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: true})) // Set practice status to true for practice trials
   };
@@ -633,7 +633,7 @@ const displayStimuliDualSet = {
     ...dualSetTrialConfig,
     sample: {
         type: 'fixed-repetitions',
-        size: 1 // Adjust size for actual trials, since we have 2 timeline variables which are repeated 16 times, we get 32 actual trials in total.
+        size: 16 // Adjust size for actual trials, since we have 2 timeline variables which are repeated 16 times, we get 32 actual trials in total.
     },
     timeline_variables: dualSetTrialConfig.timeline_variables.map(tv => ({...tv, practice: false})) // Set practice status to false for actual trials
   };
@@ -678,13 +678,13 @@ const displayStimuliDualSet = {
     
           var timeline: any[] = [];
           
-          timeline.push(preload_screen);
-          timeline.push(welcome_screen);
-          timeline.push(consent_screen);
-          timeline.push(notice_screen);
-          timeline.push(browser_screen);
-          timeline.push(fullMode_screen);
-          timeline.push(instructionSlidesConfig);
+          // timeline.push(preload_screen);
+          // timeline.push(welcome_screen);
+          // timeline.push(consent_screen);
+          // timeline.push(notice_screen);
+          // timeline.push(browser_screen);
+          // timeline.push(fullMode_screen);
+          // timeline.push(instructionSlidesConfig);
 
           // Here, we decide on the order of the blocks; do we first show the dual set or the single set? This depends on the participantBlockOrder
           if (DESIGN.participantBlockOrder === 'dualSetFirst') {
