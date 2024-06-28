@@ -107,63 +107,6 @@ export const createColorWheelStage = (stageName, stimulusType, dataKey, onFinish
     // Record the start time of the trial
     this.start_time = performance.now();
   },
-  on_finish: function (data) {
-    console.log(`${stageName} finished`);
-    // Calculate the reaction time
-    const end_time = performance.now();
-    const reactionTime = end_time - this.start_time;
-    // Retrieve the stimuli from the global variable
-    const selectedStimulus = currentStimuli.find(stim => stim.fill_color !== 'gray');
-    if (!selectedStimulus) {
-      console.error('Selected stimulus not found');
-      return;
-    }
-
-    const actualColor = selectedStimulus.original_color;
-    const actualPosition = { startX: selectedStimulus.startX, startY: selectedStimulus.startY };
-    const selectedColor = data.selected_color;  // Access the selected color directly from data
-
-    const trialData = {
-      practice: jsPsych.timelineVariable('practice'),
-      trialNumberThisBlock: counters.trialNumberThisBlock - 1,  // Subtract 1 to account for the increment in the counter which happens before the second part of the same trial occurs. This is not ideal, but it is a workaround.
-      trialNumberOverall: counters.trialNumberOverall - 1,  // Same as above
-      blockNumber: counters.blockNumber,
-      segmentNumber: counters.segmentNumber,
-      subjectID: subjectID,
-      whichStimuliFirst: DESIGN.participantGroup,
-      areTrialsRandomOrSystematic: DESIGN.participantBlockType,
-      dualOrSingleSetFirst: DESIGN.participantBlockOrder,
-      stimulusType: stimulusType,  // Use the parameter value directly
-      reactionTime: reactionTime || null,
-      actualColor: actualColor || null,
-      selectedColor: selectedColor || null,
-      actualPosition: actualPosition || null
-    };
-
-    console.log('Trial Data:', trialData);
-
-    // Ensure the data is stored
-    storeTrialData(trialData);
-
-    // Remove event listeners
-    if (this.mouseMoveListener && this.clickListener) {
-      const canvas = document.querySelector('canvas');
-      if (canvas) {
-        canvas.removeEventListener('mousemove', this.mouseMoveListener);
-        canvas.removeEventListener('click', this.clickListener);
-        // Remove the canvas element
-        if (canvas.parentNode) {
-          canvas.parentNode.removeChild(canvas);
-          console.log('Canvas removed');
-        }
-      }
-    }
-
-    // Conditionally execute the provided onFinishCallback
-    if (onFinishCallback) {
-      onFinishCallback(data);
-    }
-  },
   on_load: function () {
     const canvas = document.querySelector('canvas');
     if (canvas) {
@@ -218,8 +161,67 @@ export const createColorWheelStage = (stageName, stimulusType, dataKey, onFinish
     } else {
       console.error('Canvas not found');
     }
-  }
+  },
+  on_finish: function (data) {
+    console.log(`${stageName} finished`);
+    // Calculate the reaction time
+    const end_time = performance.now();
+    const reactionTime = end_time - this.start_time;
+    // Retrieve the stimuli from the global variable
+    const selectedStimulus = currentStimuli.find(stim => stim.fill_color !== 'gray');
+    if (!selectedStimulus) {
+      console.error('Selected stimulus not found');
+      return;
+    }
+  
+    const actualColor = selectedStimulus.original_color;
+    const actualPosition = { startX: selectedStimulus.startX, startY: selectedStimulus.startY };
+    const selectedColor = data.selected_color;  // Access the selected color directly from data
+  
+    const trialData = {
+      practice: jsPsych.timelineVariable('practice'),
+      trialNumberThisBlock: counters.trialNumberThisBlock - 1,  // Subtract 1 to account for the increment in the counter which happens before the second part of the same trial occurs. This is not ideal, but it is a workaround.
+      trialNumberOverall: counters.trialNumberOverall - 1,  // Same as above
+      blockNumber: counters.blockNumber,
+      segmentNumber: counters.segmentNumber,
+      subjectID: subjectID,
+      whichStimuliFirst: DESIGN.participantGroup,
+      areTrialsRandomOrSystematic: DESIGN.participantBlockType,
+      dualOrSingleSetFirst: DESIGN.participantBlockOrder,
+      stimulusType: stimulusType,  // Use the parameter value directly
+      reactionTime: reactionTime || null,
+      actualColor: actualColor || null,
+      selectedColor: selectedColor || null,
+      actualPosition: actualPosition || null
+    };
+  
+    console.log('Trial Data:', trialData);
+  
+    // Ensure the data is stored
+    storeTrialData(trialData);
+  
+    // Remove event listeners
+    if (this.mouseMoveListener && this.clickListener) {
+      const canvases = document.querySelectorAll('canvas');
+      console.log('Canvases:', canvases);
+      canvases.forEach(canvas => {
+        canvas.removeEventListener('mousemove', this.mouseMoveListener);
+        canvas.removeEventListener('click', this.clickListener);
+        // Remove the canvas element
+        if (canvas.parentNode) {
+          canvas.parentNode.removeChild(canvas);
+          console.log('Canvas removed');
+        }
+      });
+    }
+
+    // Conditionally execute the provided onFinishCallback
+    if (onFinishCallback) {
+      onFinishCallback(data);
+    }
+  }  
 });
+
 
 
 
