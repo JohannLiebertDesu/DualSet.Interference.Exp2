@@ -23,3 +23,8 @@ export const fullMode_screen = {
     varSystem.nBLUR = 0;
   },
 };
+
+export const closeFullScreen = {
+  type: fullscreen,
+  fullscreen_mode: false
+}

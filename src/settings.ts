@@ -1,75 +1,43 @@
 /**
  * This file contains the settings for the experiment.
  */
-import { setCSS } from './task-fun/setCSS';
+
+
+
+// Task functions
+import { setCSS } from "./task-fun/setCSS";
+
+
 setCSS();
-
-export const counters = {
-  blockNumber: 1,
-  trialNumberOverall: 1,
-  trialNumberThisBlock: 1,
-  segmentNumber: 1
-};
-
-// Function to assign participant to a group based on their ID
-export function assignParticipantGroup(id: number): Combination {
-  const groups = ['colorFirst', 'orientationFirst'];
-  const blockTypes = ['random', 'systematic'];
-  const blockOrders = ['dualSetFirst', 'singleSetFirst'];
-
-  // Generate all possible combinations of groups, block types, and block orders
-  const combinations: Combination[] = [];
-  for (const group of groups) {
-    for (const blockType of blockTypes) {
-      for (const blockOrder of blockOrders) {
-        combinations.push({ group, blockType, blockOrder });
-      }
-    }
-  }
-
-  // Assign based on participant ID using modulo to loop through combinations
-  const combination = combinations[(id - 1) % combinations.length];
-
-  return combination;
-}
-
-// Define the Combination type
-type Combination = {
-  group: string;
-  blockType: string;
-  blockOrder: string;
-};
-
-// Define the DESIGN type
-type Design = {
-  participantGroup: string | null;
-  participantBlockType: string | null;
-  participantBlockOrder: string | null;
-};
-
-// Export the DESIGN object with initial null values
-export let DESIGN: Design = {
-  participantGroup: null,
-  participantBlockType: null,
-  participantBlockOrder: null,
-};
 
 export const expInfo = {
   // settings for the experiment
   TITLE: "DualSet.Interference.Exp1",
   LANG: "en", // the default language of the experiment
 
+  // design of the experiment
+  DESIGN: {
+    nTRIALS: 96, // number of experiment trials for each condition
+    nBLOCKS: 2, // number of blocks
+  },
+
+  // settings for each trial
+  TIMING: {
+    START: 10 * 1000, // time for the countdown before a new trial starts
+    BREAK: 30, // break duration in seconds
+  },
+
   // when using Prolific, you can set customized completion codes for different situations
   // e.g., when participants complete the experiment, or when they fail the attention check
   // you can set them here and use them in the end of the experiment (jsp.ts)
   CODES: {
-    SUCCESS: "C1IEJ2YE", // the code for a successfully completion of the experiment
-    OFFLINE: "C1JZ9NKH", // the code for the offline situation
-    FAILED_ATTENTION: "CGHTN2LG", // the code for the failed experiment
-    FAILED_OTHERS: "CCWBM3SE", // the code for other failed situations (e.g., failed to resize the window)
+    SUCCESS: "success", // the code for a successfully completion of the experiment
+    OFFLINE: "offline", // the code for the offline situation
+    FAILED_ATTENTION: "failedAttention", // the code for the failed experiment
+    FAILED_OTHERS: "failedOthers", // the code for other failed situations (e.g., failed to resize the window)
     // You can specify the codes for different situations here.
   },
-  
+
   /** The key is case-sensitive and position-sensitive.
    * It is recommended to allow both upper and lower case keys.
    * You can use the `convertCase` function to prevent the issue.

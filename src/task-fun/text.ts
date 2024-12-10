@@ -18,18 +18,80 @@ export const TEXT = {
     <h1 class='title'>欢迎您参与本实验!</h1>
     </div>`
   },
-
-  feedback: function (accuracy: number, nTest: number, lang: string) {
-    switch (lang) {
-      case "en":
-        return `<div class='fb-text'>You correctly recalled ${accuracy} out of ${nTest} letters.</div>`;
-      case "de":
-        return `<div class='fb-text'>Sie haben ${accuracy} von ${nTest} Buchstaben korrekt erinnert.</div>`;
-      case "cn":
-        return `<div class='fb-text'>您正确回忆了${accuracy}/${nTest}个字母。</div>`;
+  blockBreak: function (breakType: string, loopValue: number | null, blocksCreated: number | null) {
+    if (breakType === 'betweenTrials')
+    return `<div class='main'>
+      <h1 class='title'>Take a break</h1>
+      <p class='fb-text'>
+        Good job! You have completed ${loopValue}/3 of the trials, within block ${blocksCreated} out of ${expInfo.DESIGN.nBLOCKS} total blocks. 
+        Take a few seconds to rest before you move on with more trials. 
+        When you feel ready, click on the button to continue.
+      </p>
+      <br>
+    </div>`;
+    if (breakType === 'postPractice')
+      return `<div class='main'>
+      <h1 class='title'>Ready for more?</h1>
+      <p class='fb-text'>
+      Great, these were the practice trials! 
+      When you feel ready, click on the button to continue with the main trials.
+      </p>
+      <br>
+    </div>`;
+    if (breakType === 'betweenBlocks')
+      return `<div class='main'>
+      <h1 class='title'>Take a break</h1>
+      <p class='fb-text'>
+      Excellent! You have completed block 1 out of ${expInfo.DESIGN.nBLOCKS} total blocks. 
+      Take a few seconds to rest before you move on with the next block.
+      When you feel ready, click on the button to continue.
+      </p>
+      <br>
+    </div>`;
+  },
+  blockInfo: function (readableFirstStimulus: string | null, readableSecondStimulus: string | null, presentationOrder: string | null, trialOrder: string, blocksCreated: number) {
+    if ((trialOrder === "PureFirst" && blocksCreated === 1) || (trialOrder !== "PureFirst" && blocksCreated === 2)) {
+      return `<div class='main'>
+      <h1 class='title'>What's in block ${blocksCreated}?</h1>
+      <p class='fb-text'>
+      In block ${blocksCreated}, you will see either 3 stimuli on the left side of the screen, or 6 over the entire screen.
+      The stimuli are either colored discs, or oriented lines. 
+      After the stimuli were shown, 2 of them will be randomly selected and shown again, one after the other. 
+      Your task will be to indicate what the color or orientation of these stimuli was.
+      You will first complete 12 practice trials before moving on to the main trials.
+      When you feel ready, click on the button to continue.
+      </p>
+      <br>
+    </div>`;
+  } else if ((trialOrder === "MixedFirst" && blocksCreated === 1) || (trialOrder !== "MixedFirst" && blocksCreated === 2)) {
+      if (presentationOrder === "random") {
+          return `<div class='main'>
+          <h1 class='title'>What's in block ${blocksCreated}?</h1>
+          <p class='fb-text'>
+          In block ${blocksCreated}, you will first see 3 ${readableFirstStimulus} on the left side of the screen, then 3 ${readableSecondStimulus} on the right.
+          After the discs were shown, 1 of each will be shown again, one after the other, in random order. 
+          Your task will be to indicate what the color and orientation of these stimuli was.
+          You will first complete 12 practice trials before moving on to the main trials.
+          When you feel ready, click on the button to continue.
+          </p>
+          <br>
+        </div>`; 
+          
+        } else {
+          return `<div class='main'>
+          <h1 class='title'>What's in block ${blocksCreated}?</h1>
+          <p class='fb-text'>
+          In block ${blocksCreated}, you will first see 3 ${readableFirstStimulus} on the left side of the screen, then 3 ${readableSecondStimulus} on the right.
+          After the stimuli were shown, 1 of each will be shown again, first one of the ${readableSecondStimulus} on the right, then one of the ${readableFirstStimulus} on the left.
+          Your task will be to indicate what the color and orientation of these stimuli was.
+          You will first complete 12 practice trials before moving on to the main trials.
+          When you feel ready, click on the button to continue.
+          </p>
+          <br>
+        </div>`;
+        }
     }
   },
-
   startPractice: {
     en: `<div class='main'>
         <h1 class='title'>Practice</h1>
@@ -231,7 +293,7 @@ export const SURVEY_INFO = {
 
   ATTENTION_QUES: {
     cn: "在实验过程中，您是否受到了外界环境的干扰？",
-    en: "Were you distracted during the experiment?",
+    en: "Were you distracted during the experiment? THIS DOES NOT AFFECT YOUR COMPENSATION. Please answer truthfully",
   },
   ATTENTION_OPT: {
     cn: ["是", "否"],
@@ -239,7 +301,7 @@ export const SURVEY_INFO = {
   },
 
   EFFORT_QUES: {
-    en: "How much effort did you put into the trials?",
+    en: "How much effort did you put into the trials? THIS DOES NOT AFFECT YOUR COMPENSATION. Please answer truthfully",
     cn: "您在实验中投入了多少精力？",
   },
   EFFORT_OPT: { 

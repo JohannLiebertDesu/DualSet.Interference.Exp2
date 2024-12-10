@@ -1,19 +1,20 @@
 // jsPsych official plugin
 import { initJsPsych } from "jspsych";
 
-import { markSubjectAsCompleted } from "./participantCounterbalancing";
-
 // Basic Functions
 import { trackInteractions } from "./task-fun/attentionCheck";
 
 // Global variables
-import { varSystem, expInfo, DESIGN, assignParticipantGroup } from "./settings";
+import { varSystem, expInfo } from "./settings";
 let { RUN_JATOS, CODES } = expInfo;
 import { END_INFO } from "./task-fun/text";
 
 // Task functions
 import { setCSS } from "./task-fun/setCSS";
 
+import { markSubjectAsCompleted } from "./task-fun/participantID";
+
+// Do something in the beginning of the experiment
 setCSS(); // set the CSS style of the experiment
 
 // Set for the condition in which the data fails to be uploaded to JATOS
@@ -34,8 +35,6 @@ export const jsPsych = initJsPsych({
   on_finish: function (data) {
     // stop tracking interactions
     varSystem.TRACK = false;
-
-    markSubjectAsCompleted();
 
     // get the data
     var resultJson = jsPsych.data.get().json();
@@ -83,6 +82,8 @@ export const jsPsych = initJsPsych({
     if (RUN_JATOS && navigator.onLine === true) {
       //@ts-ignore upload the data to JATOS
       jatos.submitResultData(resultJson);
+      // mark the participant as completed
+      markSubjectAsCompleted();
       // redirect to the Prolific page after 10 seconds
       setTimeout(function () {
         //@ts-ignore
