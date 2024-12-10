@@ -2,7 +2,7 @@
  * @title DualSet Interference Exp1
  * @description Inspecting the impact of a random vs an ABBA testing sequence on dual-set interference in WM
  * @author Noah Rischert, Chenyu Li and Hannah (Dames) Tschannen
- * @version 0.3.1
+ * @version 0.3.2
  *
  *
  * @assets assets/
@@ -93,10 +93,10 @@ const participantExperiment = assembleExperiment(condition.params);
   // When you want to test the experiment, you can easily comment out the screens you don't want
   timeline.push(fullMode_screen)
   timeline.push(preloadSlides);
-  // timeline.push(welcome_screen);
-  // timeline.push(consent_screen);
-  // timeline.push(notice_screen);
-  // timeline.push(browser_screen);
+  timeline.push(welcome_screen);
+  timeline.push(consent_screen);
+  timeline.push(notice_screen);
+  timeline.push(browser_screen);
   timeline.push(instructionSlidesConfig);
   timeline.push(participantExperiment);
   timeline.push(survey_screen);
