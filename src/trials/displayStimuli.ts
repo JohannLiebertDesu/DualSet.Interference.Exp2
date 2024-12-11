@@ -12,10 +12,12 @@ import { filterAndMapStimuli } from "../task-fun/filterStimuli";
 
 // Constants
 const BLOCK_SIZE = 96; // Number of trials per block
+const SEGMENT_SIZE = 32 // Number of trials per segment
 const GRID = createGrid(numColumns, numRows);
-export let practiceTrialID = 0;
-export let trialID = 0;
-export let blockID = Math.ceil(trialID / BLOCK_SIZE)
+let practiceTrialID = 0;
+let trialID = 0;
+let blockID = Math.ceil(trialID / BLOCK_SIZE)
+let segmentID = Math.ceil(trialID / SEGMENT_SIZE)
 
 export const displayStimuli = {
     type: psychophysics,
@@ -56,6 +58,7 @@ export const displayStimuli = {
         }
 
         return {
+          segmentID: segmentID,
           practiceTrialID: practiceTrialID,
           trialID: trialID,
           blockID: blockID,
