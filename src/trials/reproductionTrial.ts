@@ -324,6 +324,7 @@ export const test_trial = {
         const processedStimuli = filterAndMapStimuli(filteredStimuli);
 
         data.selectedStimuli = processedStimuli;
+        data.practice = jsPsych.timelineVariable('practice')
 
         if (isFirstTestScreen()) {
             stateManager.resetState();

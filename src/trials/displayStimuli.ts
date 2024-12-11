@@ -57,6 +57,7 @@ export const displayStimuli = {
         const { side, stimulusType } = computeTrialVariables();
       
         return {
+          practiceTrialID: practiceTrialID,
           trialID: trialID,
           blockID: blockID,
           numCircles: jsPsych.timelineVariable("numCircles"),
