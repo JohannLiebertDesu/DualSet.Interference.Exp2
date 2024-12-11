@@ -325,6 +325,7 @@ export const test_trial = {
 
         data.selectedStimuli = processedStimuli;
         data.practice = jsPsych.timelineVariable('practice')
+        data.recallOrder = jsPsych.timelineVariable('recallOrder')
 
         if (isFirstTestScreen()) {
             stateManager.resetState();

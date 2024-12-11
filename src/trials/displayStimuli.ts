@@ -40,9 +40,10 @@ export const displayStimuli = {
     
       data: function () {
         const { side, stimulusType } = computeTrialVariables();
-      
         const trialType = jsPsych.timelineVariable('trialType'); // We cant increment the trial number blindly, as in the mixed trials the displayStimuli is called twice.
         const practice = jsPsych.timelineVariable('practice') // The trial number is incremented here and not in an on_start function, because the data storing happens before.
+        let recallOrder = null; // Declare recallOrder at a higher scope
+
         if (practice) {
           if (trialType === "pure") {
             practiceTrialID++;
@@ -54,6 +55,7 @@ export const displayStimuli = {
             trialID++;
           } else if (isFirstPresentation()) {
             trialID++;
+            recallOrder = jsPsych.timelineVariable('recallOrder')
           }
         }
 
@@ -66,6 +68,7 @@ export const displayStimuli = {
           side: side,
           stimulusType: stimulusType,
           trialType: trialType,
+          recallOrder: recallOrder,
           practice: practice,
           isTestTrial: false
         };
