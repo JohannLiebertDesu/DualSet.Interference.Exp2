@@ -19,23 +19,6 @@ export let blockID = Math.ceil(trialID / BLOCK_SIZE)
 
 export const displayStimuli = {
     type: psychophysics,
-    on_start: function () { // We cant increment the trial number blindly, as in the mixed trials the displayStimuli is called twice
-      const trialType = jsPsych.timelineVariable('trialType');
-      const practice = jsPsych.timelineVariable('practice')
-      if (practice) {
-        if (trialType === "pure") {
-          practiceTrialID++;
-        } else if (isFirstPresentation()) {
-          practiceTrialID++;
-        }
-      } else {
-        if (trialType === "pure") {
-          trialID++;
-        } else if (isFirstPresentation()) {
-          trialID++;
-        }
-      }
-    },
     stimuli: function () {
         let numCircles
         numCircles = jsPsych.timelineVariable("numCircles");
@@ -56,6 +39,22 @@ export const displayStimuli = {
       data: function () {
         const { side, stimulusType } = computeTrialVariables();
       
+        const trialType = jsPsych.timelineVariable('trialType'); // We cant increment the trial number blindly, as in the mixed trials the displayStimuli is called twice.
+        const practice = jsPsych.timelineVariable('practice') // The trial number is incremented here and not in an on_start function, because the data storing happens before.
+        if (practice) {
+          if (trialType === "pure") {
+            practiceTrialID++;
+          } else if (isFirstPresentation()) {
+            practiceTrialID++;
+          }
+        } else {
+          if (trialType === "pure") {
+            trialID++;
+          } else if (isFirstPresentation()) {
+            trialID++;
+          }
+        }
+
         return {
           practiceTrialID: practiceTrialID,
           trialID: trialID,
@@ -64,7 +63,8 @@ export const displayStimuli = {
           side: side,
           stimulusType: stimulusType,
           trialType: jsPsych.timelineVariable('trialType'),
-          practice: jsPsych.timelineVariable('practice')
+          practice: jsPsych.timelineVariable('practice'),
+          isTestTrial: false
         };
       },
       
@@ -83,6 +83,9 @@ export const displayStimuli = {
     
       // Attach the relevant stimuli data to the trial data
       data.stimuliData = filteredStimuli;
+
+      console.log("Which trialID was stored?", data.trialID)
+      console.log("Which practiceTrialID was stored?", data.practiceTrialID)
   
       // Reset the grid for the next trial
       resetGrid(GRID, numColumns, numRows);
