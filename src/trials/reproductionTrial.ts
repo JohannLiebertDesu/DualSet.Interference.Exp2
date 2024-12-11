@@ -5,6 +5,7 @@ import { createColorWheel, createOrientationWheel } from "../task-fun/createWhee
 import { Stimulus, LineStimulus, CircleStimulus, WheelStimulus } from "../task-fun/createStimuli";
 import { cloneDeep } from "lodash";
 import { trialID, practiceTrialID, segmentID, blockID } from "./displayStimuli";
+import { screenWidth } from "../task-fun/createGrid";
 
 type StimulusType = 'colored_circle' | 'oriented_circle';
 
@@ -356,6 +357,14 @@ export const test_trial = {
 
         // Filter out the wheel from the stimuli array
         const filteredStimuli = stimuli_array.filter(stim => stim.category !== 'customWheel');
+
+        // Pick out the circle object from the array and check whether it's on the left or right side
+        const circleObject = filteredStimuli.find(isCircleStimulus);
+        if (circleObject) {
+            const midpoint = screenWidth / 2;
+            const side = circleObject.startX < midpoint ? 'left' : 'right';
+            data.side = side;
+        }
 
         // Map the stimuli onto the predefined stimuli types
         // Im no longer sure about the necessity of this step, but it's here for now

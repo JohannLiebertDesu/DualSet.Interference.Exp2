@@ -64,11 +64,6 @@ export async function run({
 // Make sure the code executing this is in an async function/context
 const subject_id = await initializeAndAssignSubjectID();
 
-// Now you can safely add properties to the data since subject_id is ready
-jsPsych.data.addProperties({
-  subject: subject_id,
-});
-
 // Calculate the condition index based on participant ID
 const conditionIndex = subject_id % conditions.length; // In our case, if for example 13 % 8, then conditionIndex is 5, which selects the sixth position in the array (since we start at 0)
 const condition = conditions[conditionIndex]; // From the condition array, position 5 would get selected as the relevant condition for this participant
@@ -86,6 +81,11 @@ const condition = conditions[conditionIndex]; // From the condition array, posit
 // We use the selected condition, and its contained parameters to assemble the experiment.
 const participantExperiment = assembleExperiment(condition.params);
 
+// Now you can safely add properties to the data since subject_id and the timeline variables are ready
+jsPsych.data.addProperties({
+  subject: subject_id,
+  trialOrder: condition.params.trialOrder,
+});
 
   /************************************** Procedure **************************************/
 
