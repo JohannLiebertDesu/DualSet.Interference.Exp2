@@ -1,9 +1,10 @@
-// External function to filter and map stimuli
-export function filterAndMapStimuli(stimuli_array) {
+import { Stimulus, LineStimulus, CircleStimulus } from './createStimuli';
+
+export function filterAndMapStimuli(stimuli_array: Stimulus[]): (LineStimulus | CircleStimulus)[] {
     return stimuli_array
         .map((stim) => {
             if (stim.obj_type === 'line') {
-                return {
+                const lineStim: LineStimulus = {
                     category: 'predefined',
                     obj_type: 'line',
                     x1: stim.x1,
@@ -12,18 +13,22 @@ export function filterAndMapStimuli(stimuli_array) {
                     y2: stim.y2,
                     line_color: stim.line_color,
                 };
+                return lineStim;
             } else if (stim.obj_type === 'circle') {
-                return {
+                const circleStim: CircleStimulus = {
                     category: 'predefined',
-                    obj_type: stim.obj_type,
+                    obj_type: 'circle',
                     startX: stim.startX,
                     startY: stim.startY,
                     line_color: stim.line_color, // Optional
                     fill_color: stim.fill_color, // Optional
                     radius: stim.radius,
                 };
+                return circleStim;
             }
-            return null; // Handle unexpected stimulus types
+            // If you are certain that no other obj_type will appear here, 
+            // you can remove this null return and its filter below.
+            return null;
         })
-        .filter((stim) => stim !== null); // Remove null values
+        .filter((stim): stim is LineStimulus | CircleStimulus => stim !== null);
 }

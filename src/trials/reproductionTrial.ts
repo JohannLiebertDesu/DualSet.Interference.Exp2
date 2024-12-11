@@ -4,6 +4,7 @@ import { filterAndMapStimuli } from "../task-fun/filterStimuli";
 import { createColorWheel, createOrientationWheel } from "../task-fun/createWheels";
 import { Stimulus, LineStimulus, CircleStimulus, WheelStimulus } from "../task-fun/createStimuli";
 import { cloneDeep } from "lodash";
+import { trialID, practiceTrialID, segmentID, blockID } from "./displayStimuli";
 
 type StimulusType = 'colored_circle' | 'oriented_circle';
 
@@ -184,6 +185,18 @@ function selectOrientedCircleStimuli(stimuliData: Stimulus[]): [CircleStimulus, 
     // Hide the line by setting its color to white
     selectedLine.line_color = 'white';
 
+    // Set a random line position so that an instantaneous click without moving the mouse 
+    // does not result in a perfect match
+    const randomAngle = Math.random() * 360;
+    const angleRadians = randomAngle * (Math.PI / 180);
+    const line_length = selectedCircle.radius;
+    const lineX = selectedLine.x1;
+    const lineY = selectedLine.y1;
+
+    // Compute the new endpoint of the line using the random angle
+    selectedLine.x2 = lineX + line_length * Math.cos(angleRadians);
+    selectedLine.y2 = lineY + line_length * Math.sin(angleRadians);
+
     return [selectedCircle, selectedLine];
 }
 
@@ -245,6 +258,27 @@ export const test_trial = {
             return [orientationWheel, ...selectedStimuli];
         }
     },
+    data: function () {
+        const practice = jsPsych.timelineVariable('practice')
+        const trialType = jsPsych.timelineVariable('trialType')
+        const numCircles = jsPsych.timelineVariable("numCircles")
+        let recallOrder = null; // Declare recallOrder at a higher scope
+        if (trialType === "mixed") {
+            recallOrder = jsPsych.timelineVariable('recallOrder')
+        }
+
+        return {
+          segmentID: segmentID,
+          practiceTrialID: practiceTrialID,
+          trialID: trialID,
+          blockID: blockID,
+          practice: practice,
+          recallOrder: recallOrder,
+          trialType: trialType,
+          numCircles: numCircles,
+        };
+      },
+
     background_color: "#FFFFFF",
     response_type: "mouse",
     mouse_move_func: function(event) {
@@ -311,21 +345,35 @@ export const test_trial = {
         }
     },
     on_start: function(trial) {
-        trial.data = {
+        // Merge new fields into trial.data without overwriting existing ones
+        Object.assign(trial.data, {
             stimulusToIdentify: stateManager.getCurrentStimulusToIdentify(),
-            isTestTrial: true,
-        };
+            isTestTrial: true
+        });
     },
     on_finish: function (data) {
         const stimuli_array = jsPsych.getCurrentTrial().stim_array as Stimulus[];
 
+        // Filter out the wheel from the stimuli array
         const filteredStimuli = stimuli_array.filter(stim => stim.category !== 'customWheel');
 
+        // Map the stimuli onto the predefined stimuli types
+        // Im no longer sure about the necessity of this step, but it's here for now
         const processedStimuli = filterAndMapStimuli(filteredStimuli);
 
+        // Add the selected stimuli to the dataframe
         data.selectedStimuli = processedStimuli;
-        data.practice = jsPsych.timelineVariable('practice')
-        data.recallOrder = jsPsych.timelineVariable('recallOrder')
+
+        // Add the stimulus type to the dataframe
+        let stimulusType: StimulusType;
+
+        if (processedStimuli.find(isLineStimulus)) {
+            stimulusType = 'oriented_circle';
+        } else {
+            stimulusType = 'colored_circle';
+        }
+    
+        data.stimulusType = stimulusType;
 
         if (isFirstTestScreen()) {
             stateManager.resetState();

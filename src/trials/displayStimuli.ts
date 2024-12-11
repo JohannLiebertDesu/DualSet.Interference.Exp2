@@ -14,10 +14,10 @@ import { filterAndMapStimuli } from "../task-fun/filterStimuli";
 const BLOCK_SIZE = 96; // Number of trials per block
 const SEGMENT_SIZE = 32 // Number of trials per segment
 const GRID = createGrid(numColumns, numRows);
-let practiceTrialID = 0;
-let trialID = 0;
-let blockID = Math.ceil(trialID / BLOCK_SIZE)
-let segmentID = Math.ceil(trialID / SEGMENT_SIZE)
+export let practiceTrialID = 0;
+export let trialID = 0;
+export let blockID = Math.ceil(trialID / BLOCK_SIZE)
+export let segmentID = Math.ceil(trialID / SEGMENT_SIZE)
 
 export const displayStimuli = {
     type: psychophysics,
@@ -40,13 +40,13 @@ export const displayStimuli = {
     
       data: function () {
         const { side, stimulusType } = computeTrialVariables();
-        const trialType = jsPsych.timelineVariable('trialType'); // We cant increment the trial number blindly, as in the mixed trials the displayStimuli is called twice.
-        const practice = jsPsych.timelineVariable('practice') // The trial number is incremented here and not in an on_start function, because the data storing happens before.
+        const trialType = jsPsych.timelineVariable('trialType'); 
+        const practice = jsPsych.timelineVariable('practice') 
         let recallOrder = null; // Declare recallOrder at a higher scope
 
         if (practice) {
-          if (trialType === "pure") {
-            practiceTrialID++;
+          if (trialType === "pure") {  // We cant increment the trial number blindly, as in the mixed trials the displayStimuli is called twice.
+            practiceTrialID++; // The trial number is incremented here and not in an on_start function, because the data storing happens before.
           } else if (isFirstPresentation()) {
             practiceTrialID++;
           }
@@ -55,9 +55,11 @@ export const displayStimuli = {
             trialID++;
           } else if (isFirstPresentation()) {
             trialID++;
-            recallOrder = jsPsych.timelineVariable('recallOrder')
-          }
         }
+      }
+       if (trialType === "mixed") {
+        recallOrder = jsPsych.timelineVariable('recallOrder')
+      }
 
         return {
           segmentID: segmentID,
@@ -74,7 +76,6 @@ export const displayStimuli = {
         };
       },
       
-  
     background_color: "#FFFFFF",
     choices: "NO_KEYS",
     trial_duration: function () {
@@ -90,9 +91,6 @@ export const displayStimuli = {
       // Attach the relevant stimuli data to the trial data
       data.stimuliData = filteredStimuli;
 
-      console.log("Which trialID was stored?", data.trialID)
-      console.log("Which practiceTrialID was stored?", data.practiceTrialID)
-  
       // Reset the grid for the next trial
       resetGrid(GRID, numColumns, numRows);
   },
