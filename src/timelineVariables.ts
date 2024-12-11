@@ -58,7 +58,7 @@ interface MixedTimelineVariable {
   firstStimulusType: StimulusType; // First stimulus type in the pair
   secondStimulusType: StimulusType; // Second stimulus type in the pair
   trialType: string; // Type of trial ('mixed')
-  presentationOrder: RecallOrderInMixed; // Order of stimulus presentation
+  recallOrder: RecallOrderInMixed; // Order of stimulus recall
   numCircles: number | string; // Number of circles to display
   practice: boolean; // Indicates if it's a practice trial
 }
@@ -118,12 +118,12 @@ function getReadableStimulus(stimulus: StimulusType | null): string {
 
 /**
  * Function to create an information screen that informs participants about the upcoming block.
- * It displays details such as the types of stimuli, presentation order, trial order, and block number.
+ * It displays details such as the types of stimuli, recall order, trial order, and block number.
  */
 function createUpcomingBlockInformationScreen(
   firstStimulus: StimulusType | null,
   secondStimulus: StimulusType | null,
-  presentationOrder: RecallOrderInMixed | null,
+  recallOrder: RecallOrderInMixed | null,
   trialOrder: TrialOrder,
   blocksCreated: number
 ): Trial {
@@ -135,7 +135,7 @@ function createUpcomingBlockInformationScreen(
     stimulus: TEXT.blockInfo(
       readableFirstStimulus,
       readableSecondStimulus,
-      presentationOrder,
+      recallOrder,
       trialOrder,
       blocksCreated
     ), // Information message
@@ -199,17 +199,17 @@ function createPureTimelineVariables(
 }
 
 /**
- * Creates an array of variables for mixed trials based on the stimulus types and presentation order.
+ * Creates an array of variables for mixed trials based on the stimulus types and recall order.
  * @param firstStimulusType - First stimulus type in the mixed pair
  * @param secondStimulusType - Second stimulus type in the mixed pair
- * @param presentationOrder - Order in which stimuli are presented within mixed trials
+ * @param recallOrder - Order in which stimuli are presented within mixed trials
  * @param practice - Indicates if these are practice trials
  * @returns Array of MixedTimelineVariable objects
  */
 function createMixedTimelineVariables(
   firstStimulusInMixed: StimulusType,
   secondStimulusInMixed: StimulusType,
-  presentationOrder: RecallOrderInMixed,
+  recallOrder: RecallOrderInMixed,
   practice: boolean
 ): MixedTimelineVariable[] {
   return [
@@ -217,7 +217,7 @@ function createMixedTimelineVariables(
       firstStimulusType: firstStimulusInMixed,
       secondStimulusType: secondStimulusInMixed,
       trialType: 'mixed',
-      presentationOrder: presentationOrder,
+      recallOrder: recallOrder,
       numCircles: 3, // Number of circles is fixed as 3 for mixed trials
       practice: practice,
     },
@@ -461,7 +461,7 @@ function generateConditionCombinations(): {
   firstStimulusInMixedOptions.forEach((firstStimulusInMixed) => {
     // Iterate over each possible value of trialOrder
     trialOrderOptions.forEach((trialOrder) => {
-      // Iterate over each possible value of presentationOrderInMixed
+      // Iterate over each possible value of recallOrderInMixed
       recallOrderInMixed.forEach((recallOrderInMixed) => {
         // Generate a descriptive name for the condition
         const conditionName = `${
@@ -493,33 +493,3 @@ function generateConditionCombinations(): {
 
 // Generate all condition combinations and export them for use in the experiment setup
 export const conditions = generateConditionCombinations();
-
-/**
- * Summary of Variable and Function Flow:
- * 
- * 1. **Condition Parameters Generation:**
- *    - `firstStimulusInMixedOptions`, `trialOrderOptions`, and `presentationOrderInMixedOptions` arrays define all possible experimental conditions.
- *    - `generateConditionCombinations()` creates every combination of these options, assigning each a unique name and parameter set.
- * 
- * 2. **Experiment Assembly:**
- *    - For each condition, `assembleExperiment(params)` is called with the specific `ConditionParams`.
- *    - Inside `assembleExperiment`:
- *      - Determines stimulus order for pure trials based on `firstStimulusInMixed`.
- *      - Sets `postTrialGaps` based on the first stimulus.
- *      - Creates **practice** and **main** procedures for both pure and mixed trials using `createPureStimuliProcedure` and `createMixedStimuliProcedure`.
- *      - Creates **pure** and **mixed** blocks with their respective procedures and inserts appropriate breaks using `createBlock`.
- *      - Assembles the final timeline based on `trialOrder`, arranging pure and mixed blocks with a large break in between.
- * 
- * 3. **Procedures and Blocks:**
- *    - **Procedures** (`Procedure` interface) define a sequence of trials along with how many times they should be repeated (`sample`).
- *    - **Blocks** are sequences of procedures and trials (like breaks and information screens) that structure the experiment into manageable sections.
- * 
- * 4. **Trials:**
- *    - Individual trials are defined using the `Trial` interface, specifying the type, stimuli, choices, and any post-trial gaps.
- *    - Special trials like break screens and information screens are created using helper functions (`createBreakScreen`, `createUpcomingBlockInformationScreen`).
- * 
- * 5. **Final Output:**
- *    - The `assembleExperiment` function returns an `Experiment` object containing the name and the complete timeline of procedures and trials.
- *    - The `conditions` array holds all possible condition setups, which can be used to initialize different experiment runs or assign conditions to participants.
- */
-

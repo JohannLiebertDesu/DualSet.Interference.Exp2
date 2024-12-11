@@ -72,14 +72,14 @@ function isWheelStimulus(stim: Stimulus): stim is WheelStimulus {
 // Main function to select stimuli based on the provided stimulus type
 function selectStimuli(stimulusType: StimulusType): Stimulus[] {
     const trialType = jsPsych.timelineVariable('trialType');
-    let presentationOrder: 'ABBA' | 'random' | undefined;
+    let recallOrder: 'ABBA' | 'random' | undefined;
 
     if (trialType !== 'pure') {
-        presentationOrder = jsPsych.timelineVariable('presentationOrder');
+        recallOrder = jsPsych.timelineVariable('recallOrder');
     }
 
-    // Fetch the relevant stimuli data based on trial type and presentation order
-    let stimuliData = getStimuliData(trialType, presentationOrder, stimulusType);
+    // Fetch the relevant stimuli data based on trial type and recall order
+    let stimuliData = getStimuliData(trialType, recallOrder, stimulusType);
 
     if (!stimuliData || stimuliData.length === 0) {
         throw new Error("No stimuli available.");
@@ -96,10 +96,10 @@ function selectStimuli(stimulusType: StimulusType): Stimulus[] {
     }
 }
 
-// Helper function to get stimuli data based on trial type and presentation order
+// Helper function to get stimuli data based on trial type and recall order
 function getStimuliData(
     trialType: 'pure' | 'mixed',
-    presentationOrder: 'ABBA' | 'random' | undefined,
+    recallOrder: 'ABBA' | 'random' | undefined,
     stimulusType: StimulusType
 ): Stimulus[] {
     let stimuliData: Stimulus[] = [];
@@ -110,17 +110,17 @@ function getStimuliData(
             ? cloneDeep(previousTrial.stimuliData)
             : stateManager.getFilteredData();
     } else if (trialType === 'mixed') {
-        if (presentationOrder === 'ABBA') {
+        if (recallOrder === 'ABBA') {
             const indexOffset = isFirstTestScreen() ? 1 : 3;
             const previousTrial = fetchPreviousTrials(indexOffset)[0];
             stimuliData = cloneDeep(previousTrial.stimuliData);
-        } else if (presentationOrder === 'random') {
+        } else if (recallOrder === 'random') {
             const numTrials = isFirstTestScreen() ? 2 : 3;
             const recentTrials = fetchPreviousTrials(numTrials, stimulusType);
             const relevantTrial = recentTrials.find(trial => trial.stimulusType === stimulusType);
             stimuliData = relevantTrial ? cloneDeep(relevantTrial.stimuliData) : [];
         } else {
-            throw new Error(`Unknown presentation order: ${presentationOrder}`);
+            throw new Error(`Unknown recall order: ${recallOrder}`);
         }
     } else {
         throw new Error(`Unknown trial type: ${trialType}`);
@@ -196,13 +196,13 @@ export const test_trial = {
         if (trialType === 'pure') {
             stimulusType = jsPsych.timelineVariable('stimulusType');
         } else if (trialType === 'mixed') {
-            const presentationOrder = jsPsych.timelineVariable('presentationOrder');
+            const recallOrder = jsPsych.timelineVariable('recallOrder');
             const firstStimulusType = jsPsych.timelineVariable('firstStimulusType');
             const secondStimulusType = jsPsych.timelineVariable('secondStimulusType');
 
-            if (presentationOrder === 'ABBA') {
+            if (recallOrder === 'ABBA') {
                 stimulusType = isFirstTestScreen() ? secondStimulusType : firstStimulusType;
-            } else if (presentationOrder === 'random') {
+            } else if (recallOrder === 'random') {
                 if (isFirstTestScreen()) {
                     stimulusType = Math.random() < 0.5 ? firstStimulusType : secondStimulusType;
                     stateManager.setSelectedStimulusTypeForRandomOrder(stimulusType);
@@ -212,7 +212,7 @@ export const test_trial = {
                         : firstStimulusType;
                 }
             } else {
-                throw new Error(`Unknown presentation order: ${presentationOrder}`);
+                throw new Error(`Unknown recall order: ${recallOrder}`);
             }
         } else {
             throw new Error(`Unknown trial type: ${trialType}`);

@@ -65,8 +65,8 @@ export const displayStimuli = {
           numCircles: jsPsych.timelineVariable("numCircles"),
           side: side,
           stimulusType: stimulusType,
-          trialType: jsPsych.timelineVariable('trialType'),
-          practice: jsPsych.timelineVariable('practice'),
+          trialType: trialType,
+          practice: practice,
           isTestTrial: false
         };
       },

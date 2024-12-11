@@ -79,7 +79,7 @@ const condition = conditions[conditionIndex]; // From the condition array, posit
 //   params: {
 //     firstStimulusInMixed: StimulusType.ColoredCircle,
 //     trialOrder: TrialOrder.PureFirst,
-//     presentationOrderInMixed: PresentationOrderInMixed.ABBA,
+//     recallOrderInMixed: RecallOrderInMixed.ABBA,
 //   },
 // }
 

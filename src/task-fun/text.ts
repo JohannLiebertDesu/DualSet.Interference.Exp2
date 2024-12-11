@@ -49,7 +49,7 @@ export const TEXT = {
       <br>
     </div>`;
   },
-  blockInfo: function (readableFirstStimulus: string | null, readableSecondStimulus: string | null, presentationOrder: string | null, trialOrder: string, blocksCreated: number) {
+  blockInfo: function (readableFirstStimulus: string | null, readableSecondStimulus: string | null, recallOrder: string | null, trialOrder: string, blocksCreated: number) {
     if ((trialOrder === "PureFirst" && blocksCreated === 1) || (trialOrder !== "PureFirst" && blocksCreated === 2)) {
       return `<div class='main'>
       <h1 class='title'>What's in block ${blocksCreated}?</h1>
@@ -64,7 +64,7 @@ export const TEXT = {
       <br>
     </div>`;
   } else if ((trialOrder === "MixedFirst" && blocksCreated === 1) || (trialOrder !== "MixedFirst" && blocksCreated === 2)) {
-      if (presentationOrder === "random") {
+      if (recallOrder === "random") {
           return `<div class='main'>
           <h1 class='title'>What's in block ${blocksCreated}?</h1>
           <p class='fb-text'>
