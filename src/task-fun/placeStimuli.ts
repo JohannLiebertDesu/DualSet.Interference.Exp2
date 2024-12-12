@@ -49,6 +49,7 @@ function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, s
             radius: radius,
             line_color: color,
             fill_color: color,
+            line_width: 3,
         });
     } else if (stimulusType === 'oriented_circle') {
         const angle = Math.random() * 2 * Math.PI; // Random angle in radians
@@ -65,6 +66,7 @@ function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, s
             radius: radius,
             line_color: 'black',
             fill_color: 'transparent', // No fill for circle_with_line
+            line_width: 3,
         });
         stimuli.push({
             category: 'predefined',
@@ -74,6 +76,7 @@ function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, s
             x2: endX,
             y2: endY,
             line_color: 'black',
+            line_width: 3,
         });
     }
 

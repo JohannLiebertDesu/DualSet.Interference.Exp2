@@ -6,6 +6,7 @@ export type LineStimulus = {
     x2: number;
     y2: number;
     line_color: string;
+    line_width: number;
 };
 
 export type CircleStimulus = {
@@ -16,6 +17,7 @@ export type CircleStimulus = {
     line_color?: string;
     fill_color?: string;
     radius: number;
+    line_width: number;
 };
 
 export type WheelStimulus = {

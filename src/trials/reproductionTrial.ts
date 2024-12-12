@@ -241,8 +241,8 @@ export const test_trial = {
             throw new Error("No circle stimulus found in selected stimuli");
         }
         const radius = circleStim.radius;
-        const outerRadius = radius * 3;
-        const innerRadius = outerRadius * 0.7;
+        const outerRadius = radius * 2.7;
+        const innerRadius = outerRadius * 0.68;
 
         // Define the center coordinates of the wheel
         const centerX = circleStim.startX;

@@ -12,6 +12,7 @@ export function filterAndMapStimuli(stimuli_array: Stimulus[]): (LineStimulus | 
                     x2: stim.x2,
                     y2: stim.y2,
                     line_color: stim.line_color,
+                    line_width: stim.line_width,
                 };
                 return lineStim;
             } else if (stim.obj_type === 'circle') {
@@ -23,6 +24,7 @@ export function filterAndMapStimuli(stimuli_array: Stimulus[]): (LineStimulus | 
                     line_color: stim.line_color, // Optional
                     fill_color: stim.fill_color, // Optional
                     radius: stim.radius,
+                    line_width: stim.line_width,
                 };
                 return circleStim;
             }
