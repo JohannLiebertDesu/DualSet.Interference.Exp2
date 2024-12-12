@@ -94,17 +94,16 @@ export const displayStimuli = {
       // Reset the grid for the next trial
       resetGrid(GRID, numColumns, numRows);
   },
+
       post_trial_gap: function() {
+
         const trialType = jsPsych.timelineVariable('trialType');
       
         if (trialType === "pure") {
           return jsPsych.timelineVariable("post_trial_gap");
         } else {
-          // Fetch the number of mixed trials completed so far (including current)
-          const mixedTrialCount = jsPsych.data.get().filter({ trialType: "mixed" }).count();
-          const isFirstPresentation = mixedTrialCount % 2 === 1; // After trial completion, so we need to check if it's odd (= second presentation)
-      
-          if (isFirstPresentation) {
+          
+          if (isFirstPresentation()) {
             return 2000;
           } else {
             return 1000;

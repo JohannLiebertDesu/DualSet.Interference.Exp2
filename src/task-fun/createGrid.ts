@@ -19,7 +19,7 @@ const DIAGONAL_ADJACENCY = 1; // Maximum diagonal proximity to mark cells as occ
 
 // Calculate cell dimensions based on screen size and grid structure
 export const cellSize = calculateCellSize(screenWidth, screenHeight, numColumns, numRows);
-export const radius = Math.min(cellSize.cellWidth, cellSize.cellHeight) / 2.5; // Radius for stimuli size
+export const radius = Math.min(cellSize.cellWidth, cellSize.cellHeight) / 2.3; // Radius for stimuli size
 
 console.log("width and height:", cellSize.cellWidth, cellSize.cellHeight);
 
