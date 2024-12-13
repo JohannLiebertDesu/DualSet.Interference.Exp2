@@ -31,10 +31,10 @@ export const expInfo = {
   // e.g., when participants complete the experiment, or when they fail the attention check
   // you can set them here and use them in the end of the experiment (jsp.ts)
   CODES: {
-    SUCCESS: "success", // the code for a successfully completion of the experiment
-    OFFLINE: "offline", // the code for the offline situation
-    FAILED_ATTENTION: "failedAttention", // the code for the failed experiment
-    FAILED_OTHERS: "failedOthers", // the code for other failed situations (e.g., failed to resize the window)
+    SUCCESS: "CPQW2L6V", // the code for a successfully completion of the experiment
+    OFFLINE: "CPQW2L6V", // the code for the offline situation
+    FAILED_ATTENTION: "C7AEPEAD", // the code for the failed experiment
+    FAILED_OTHERS: "CA5G8VEJ", // the code for other failed situations (e.g., failed to resize the window)
     // You can specify the codes for different situations here.
   },
 
