@@ -11,7 +11,7 @@ import FullscreenPlugin from "@jspsych/plugin-fullscreen";
 export const screenWidth = window.screen.width; // Width of the user's screen
 export const screenHeight = window.screen.height; // Height of the user's screen
 export const numColumns = 13; // Number of columns in the grid
-export const numRows = 7; // Number of rows in the grid
+export const numRows = 6; // Number of rows in the grid
 
 // Parameters to control adjacency of occupied cells
 const ADJACENCY_LIMIT = 1; // Maximum horizontal/vertical proximity to mark cells as occupied
@@ -20,8 +20,6 @@ const DIAGONAL_ADJACENCY = 1; // Maximum diagonal proximity to mark cells as occ
 // Calculate cell dimensions based on screen size and grid structure
 export const cellSize = calculateCellSize(screenWidth, screenHeight, numColumns, numRows);
 export const radius = Math.min(cellSize.cellWidth, cellSize.cellHeight) / 2.3; // Radius for stimuli size
-
-console.log("width and height:", cellSize.cellWidth, cellSize.cellHeight);
 
 // Define plugins to enable and disable fullscreen mode
 export const goFullScreen = {

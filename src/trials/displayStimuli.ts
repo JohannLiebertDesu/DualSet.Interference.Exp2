@@ -103,11 +103,12 @@ export const displayStimuli = {
           return jsPsych.timelineVariable("post_trial_gap");
         } else {
           
-          if (isFirstPresentation()) {
-            return 2000;
-          } else {
-            return 1000;
-          }
+          return 1000; // I really hope im not making a logical mistake here, because in the slides it says 2000 for the first presentation and 1000 for the second, but no matter how i look at it that seems wrong.
+          // if (isFirstPresentation()) {
+          //   return 2000;
+          // } else {
+          //   return 1000;
+          // }
         }
     }  
 };
