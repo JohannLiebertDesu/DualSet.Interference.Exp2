@@ -2,7 +2,7 @@ declare const jatos: any;
 export let participantID: number;
 
 
-export async function initializeAndAssignSubjectID(numberOfParticipants = 80) {
+export async function initializeAndAssignSubjectID(numberOfParticipants = 56) {
     let subjects: number[] = [];
 
     if (typeof jatos !== 'undefined') {

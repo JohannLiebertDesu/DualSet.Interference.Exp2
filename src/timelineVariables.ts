@@ -239,7 +239,7 @@ function createPureStimuliProcedure(
     timeline_variables: timelineVariablesPureSet, // Variables defining each trial's parameters
     sample: {
       type: 'fixed-repetitions', // Fixed number of repetitions
-      size: practice ? 1 : 1, // Number of repetitions varies for practice vs. main trials
+      size: practice ? 3 : 8, // Number of repetitions varies for practice vs. main trials
     },
     procedureType: 'pure'
   };
@@ -260,7 +260,7 @@ function createMixedStimuliProcedure(
     timeline_variables: timelineVariablesMixedSet, // Variables defining each trial's parameters
     sample: {
       type: 'fixed-repetitions', // Fixed number of repetitions
-      size: practice ? 4 : 4, // Number of repetitions varies for practice vs. main trials
+      size: practice ? 12 : 32, // Number of repetitions varies for practice vs. main trials
     },
     procedureType: 'mixed'
   };
