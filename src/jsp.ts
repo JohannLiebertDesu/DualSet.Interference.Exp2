@@ -58,6 +58,8 @@ export const jsPsych = initJsPsych({
       case "success":
         endInfo = "FINISHED";
         endStatus = true;
+        // mark the participant as completed
+        markSubjectAsCompleted();
         if (RUN_JATOS && navigator.onLine === true) {
           endScreen = END_INFO.completedOnline[expInfo.LANG];
           redirectLink = `https://app.prolific.co/submissions/complete?cc=${CODES.SUCCESS}`;
@@ -82,8 +84,6 @@ export const jsPsych = initJsPsych({
     if (RUN_JATOS && navigator.onLine === true) {
       //@ts-ignore upload the data to JATOS
       jatos.submitResultData(resultJson);
-      // mark the participant as completed
-      markSubjectAsCompleted();
       // redirect to the Prolific page after 10 seconds
       setTimeout(function () {
         //@ts-ignore
