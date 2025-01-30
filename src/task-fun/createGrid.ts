@@ -32,6 +32,10 @@ export const closeFullScreen = {
     fullscreen_mode: false
 }
 
+export const centerX = screenWidth / 2;
+export const centerY = screenHeight / 2;
+
+
 // Function to calculate cell dimensions based on grid and screen sizes
 export function calculateCellSize(screenWidth: number, screenHeight: number, numColumns: number, numRows: number) {
     const cellWidth = screenWidth / numColumns;
