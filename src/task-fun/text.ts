@@ -18,79 +18,115 @@ export const TEXT = {
     <h1 class='title'>欢迎您参与本实验!</h1>
     </div>`
   },
-  blockBreak: function (breakType: string, loopValue: number | null, blocksCreated: number | null) {
-    if (breakType === 'betweenTrials')
+  blockBreak: function (
+    breakType: 'betweenTrials' | 'postPractice' | 'betweenBlocks',
+    loopValue: number | null,
+    blocksCreated: number | null
+  ) {
+    if (breakType === 'betweenTrials') {
+      return `<div class='main'>
+        <h1 class='title'>Take a break</h1>
+        <p class='fb-text'>
+          Good job! You have completed ${loopValue}/3 of the trials, 
+          within block ${blocksCreated} out of ${expInfo.DESIGN.nBLOCKS} total blocks. 
+          Take a few seconds to rest before you move on with more trials. 
+          When you feel ready, click on the button to continue.
+        </p>
+        <br>
+      </div>`;
+    }
+
+    if (breakType === 'postPractice') {
+      return `<div class='main'>
+        <h1 class='title'>Ready for more?</h1>
+        <p class='fb-text'>
+          Great, these were the practice trials! 
+          When you feel ready, click on the button to continue with the main trials.
+        </p>
+        <br>
+      </div>`;
+    }
+
+    if (breakType === 'betweenBlocks') {
+      return `<div class='main'>
+        <h1 class='title'>Take a break</h1>
+        <p class='fb-text'>
+          Excellent! You have completed block 1 out of ${expInfo.DESIGN.nBLOCKS} total blocks. 
+          Take a few seconds to rest before you move on to the next block.
+          When you feel ready, click on the button to continue.
+        </p>
+        <br>
+      </div>`;
+    }
+  },
+
+  /**
+   * Announces what will happen in the upcoming block.
+   * We now distinguish between 'combined' and 'split' blocks.
+   * For the 'split' block, we also mention the recall order (ABBA vs random).
+   */
+  blockInfo: function (
+    blockType: 'combined' | 'split',
+    recallOrder: string | null,
+    trialOrder: string,
+    blockNumber: number
+  ) {
+// Combined block text
+if (blockType === 'combined') {
+  return `<div class='main'>
+    <h1 class='title'>What's in block ${blockNumber}?</h1>
+    <p class='fb-text'>
+      In this <strong>combined</strong> block, you will see colored discs.
+      Sometimes you will see <strong>3 discs</strong> at once, and sometimes <strong>6 discs</strong> at once.
+      After each presentation, you will be asked to reproduce the colors of two of the discs.
+      You will first complete some practice trials before moving on to the main trials.
+      When you feel ready, click on the button to continue.
+    </p>
+    <br>
+  </div>`;
+}
+
+// Split block text
+if (blockType === 'split') {
+  // If the recall order is random
+  if (recallOrder === 'random') {
     return `<div class='main'>
-      <h1 class='title'>Take a break</h1>
+      <h1 class='title'>What's in block ${blockNumber}?</h1>
       <p class='fb-text'>
-        Good job! You have completed ${loopValue}/3 of the trials, within block ${blocksCreated} out of ${expInfo.DESIGN.nBLOCKS} total blocks. 
-        Take a few seconds to rest before you move on with more trials. 
+        In this <strong>split</strong> block, you will first see <strong>3 discs</strong> on the left side of the screen,
+        then <strong>3 discs</strong> on the right side.
+        Afterwards, you will be tested on the colors of two of these discs in a <strong>random</strong> order.
+        You will first complete some practice trials before moving on to the main trials.
         When you feel ready, click on the button to continue.
       </p>
       <br>
     </div>`;
-    if (breakType === 'postPractice')
-      return `<div class='main'>
-      <h1 class='title'>Ready for more?</h1>
+  } 
+  // If the recall order is ABBA (or any other predictable pattern)
+  else {
+    return `<div class='main'>
+      <h1 class='title'>What's in block ${blockNumber}?</h1>
       <p class='fb-text'>
-      Great, these were the practice trials! 
-      When you feel ready, click on the button to continue with the main trials.
+        In this <strong>split</strong> block, you will first see <strong>3 discs</strong> on the left side of the screen,
+        then <strong>3 discs</strong> on the right side.
+        Afterwards, you will be tested on*the colors of two discs:
+        first on a disc from the left side, then on a disc from the right side.
+        You will first complete some practice trials before moving on to the main trials.
+        When you feel ready, click on the button to continue.
       </p>
       <br>
     </div>`;
-    if (breakType === 'betweenBlocks')
-      return `<div class='main'>
-      <h1 class='title'>Take a break</h1>
+  }
+}
+    // Fallback in case something goes wrong
+    return `<div class='main'>
+      <h1 class='title'>Block ${blockNumber}</h1>
       <p class='fb-text'>
-      Excellent! You have completed block 1 out of ${expInfo.DESIGN.nBLOCKS} total blocks. 
-      Take a few seconds to rest before you move on with the next block.
-      When you feel ready, click on the button to continue.
+        We are preparing the next block. 
+        Click "Continue" if you are ready.
       </p>
       <br>
     </div>`;
-  },
-  blockInfo: function (readableFirstStimulus: string | null, readableSecondStimulus: string | null, recallOrder: string | null, trialOrder: string, blocksCreated: number) {
-    if ((trialOrder === "PureFirst" && blocksCreated === 1) || (trialOrder !== "PureFirst" && blocksCreated === 2)) {
-      return `<div class='main'>
-      <h1 class='title'>What's in block ${blocksCreated}?</h1>
-      <p class='fb-text'>
-      In block ${blocksCreated}, you will see either 3 stimuli on the left side of the screen, or 6 over the entire screen.
-      The stimuli are either colored discs, or oriented lines. 
-      After the stimuli were shown, 2 of them will be randomly selected and shown again, one after the other. 
-      Your task will be to indicate what the color or orientation of these stimuli was.
-      You will first complete 12 practice trials before moving on to the main trials.
-      When you feel ready, click on the button to continue.
-      </p>
-      <br>
-    </div>`;
-  } else if ((trialOrder === "MixedFirst" && blocksCreated === 1) || (trialOrder !== "MixedFirst" && blocksCreated === 2)) {
-      if (recallOrder === "random") {
-          return `<div class='main'>
-          <h1 class='title'>What's in block ${blocksCreated}?</h1>
-          <p class='fb-text'>
-          In block ${blocksCreated}, you will first see 3 ${readableFirstStimulus} on the left side of the screen, then 3 ${readableSecondStimulus} on the right.
-          After the discs were shown, 1 of each will be shown again, one after the other, in random order. 
-          Your task will be to indicate what the color and orientation of these stimuli was.
-          You will first complete 12 practice trials before moving on to the main trials.
-          When you feel ready, click on the button to continue.
-          </p>
-          <br>
-        </div>`; 
-          
-        } else {
-          return `<div class='main'>
-          <h1 class='title'>What's in block ${blocksCreated}?</h1>
-          <p class='fb-text'>
-          In block ${blocksCreated}, you will first see 3 ${readableFirstStimulus} on the left side of the screen, then 3 ${readableSecondStimulus} on the right.
-          After the stimuli were shown, 1 of each will be shown again, first one of the ${readableSecondStimulus} on the right, then one of the ${readableFirstStimulus} on the left.
-          Your task will be to indicate what the color and orientation of these stimuli was.
-          You will first complete 12 practice trials before moving on to the main trials.
-          When you feel ready, click on the button to continue.
-          </p>
-          <br>
-        </div>`;
-        }
-    }
   },
   startPractice: {
     en: `<div class='main'>

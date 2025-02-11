@@ -100,12 +100,12 @@ function selectStimuli(stimulusType: StimulusType): Stimulus[] {
 
 // Helper function to get stimuli data based on trial type and recall order
 function getStimuliData(
-    trialType: 'pure' | 'mixed',
+    trialType: 'combined' | 'split',
     recallOrder: 'ABBA' | 'random' | undefined,
     stimulusType: StimulusType
 ): Stimulus[] {
     let stimuliData: Stimulus[] = [];
-    if (trialType === 'pure') {
+    if (trialType === 'combined') {
         const previousTrial = fetchPreviousTrials(1)[0];
         stimuliData = isFirstTestScreen()
             ? cloneDeep(previousTrial.stimuliData)
