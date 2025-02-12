@@ -66,6 +66,7 @@ export const displayStimuli = {
       recallOrder = jsPsych.timelineVariable("recallOrder");
     }
 
+    console.log("is first presentation", isFirstPresentation());
     return {
       segmentID: segmentID,
       practiceTrialID: practiceTrialID,
@@ -78,6 +79,7 @@ export const displayStimuli = {
       recallOrder: recallOrder,
       practice: practice,
       isTestTrial: false,
+      presentationOrder: isFirstPresentation() ? "A" : "B",
     };
   },
 

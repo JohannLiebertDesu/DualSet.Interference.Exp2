@@ -278,14 +278,20 @@ export const test_trial = {
     // All stimuli are "colored_circle" now
     data.stimulusType = 'colored_circle';
 
-    // This code logs whether it is the 1st or 2nd test screen
+    // In this part of the code, when we calculate isFirstTestScreen() again, it actually returns false, even though it is the first test screen. 
+    // This is why we reset the stateManager like this, even though it seems we are resetting it during the first test screen, when actually
+    // it is the second test screen. None of the other functions are affected by this, not even post_trial_gap.
     if (isFirstTestScreen()) {
       data.recallPosition = 2;
     } else {
       data.recallPosition = 1;
     }
 
-    // If it’s the first test screen, we reset the state
+      // If it's a split trial, label as 'A' or 'B'
+     if (data.trialType === 'split') {
+    data.AorBatRetrieval = (data.side === 'left') ? 'A' : 'B';
+    }
+    // If it’s the first test screen (meaning its actually the second), we reset the state
     if (isFirstTestScreen()) {
       stateManager.resetState();
     }
