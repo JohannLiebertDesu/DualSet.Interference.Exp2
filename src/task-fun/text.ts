@@ -109,7 +109,7 @@ if (blockType === 'split') {
       <p class='fb-text'>
         In this <strong>split</strong> block, you will first see <strong>3 discs</strong> on the left side of the screen,
         then <strong>3 discs</strong> on the right side.
-        Afterwards, you will be tested on*the colors of two discs:
+        Afterwards, you will be tested on the colors of two discs:
         first on a disc from the left side, then on a disc from the right side.
         You will first complete some practice trials before moving on to the main trials.
         When you feel ready, click on the button to continue.

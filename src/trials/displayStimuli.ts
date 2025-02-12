@@ -12,133 +12,132 @@ import { filterAndMapStimuli } from "../task-fun/filterStimuli";
 
 // Constants
 const BLOCK_SIZE = 96; // Number of trials per block
-const SEGMENT_SIZE = 32 // Number of trials per segment
+const SEGMENT_SIZE = 32; // Number of trials per segment
 const GRID = createGrid(numColumns, numRows);
+
 export let practiceTrialID = 0;
 export let trialID = 0;
-export let blockID = Math.ceil(trialID / BLOCK_SIZE)
-export let segmentID = Math.ceil(trialID / SEGMENT_SIZE)
+export let blockID = Math.ceil(trialID / BLOCK_SIZE);
+export let segmentID = Math.ceil(trialID / SEGMENT_SIZE);
 
 export const displayStimuli = {
-    type: psychophysics,
-    stimuli: function () {
-        let numCircles
-        numCircles = jsPsych.timelineVariable("numCircles");
-        const { side, stimulusType } = computeTrialVariables();
-      
-        const generatedStimuli = placeAndGenerateStimuli(
-          GRID,
-          numCircles,
-          cellSize.cellWidth,
-          cellSize.cellHeight,
-          side,
-          stimulusType
-        );
-      
-        return generatedStimuli;
-      },
-    
-      data: function () {
-        const { side, stimulusType } = computeTrialVariables();
-        const trialType = jsPsych.timelineVariable('trialType'); 
-        const practice = jsPsych.timelineVariable('practice') 
-        let recallOrder = null; // Declare recallOrder at a higher scope
+  type: psychophysics,
+  stimuli: function () {
+    // Now we only have a single stimulusType => colored circles
+    // Still read numCircles from timeline variable
+    const numCircles = jsPsych.timelineVariable("numCircles");
+    const { side, stimulusType } = computeTrialVariables();
 
-        if (practice) {
-          if (trialType === "pure") {  // We cant increment the trial number blindly, as in the mixed trials the displayStimuli is called twice.
-            practiceTrialID++; // The trial number is incremented here and not in an on_start function, because the data storing happens before.
-          } else if (isFirstPresentation()) {
-            practiceTrialID++;
-          }
-        } else {
-          if (trialType === "pure") {
-            trialID++;
-          } else if (isFirstPresentation()) {
-            trialID++;
-        }
-      }
-       if (trialType === "mixed") {
-        recallOrder = jsPsych.timelineVariable('recallOrder')
-      }
+    const generatedStimuli = placeAndGenerateStimuli(
+      GRID,
+      numCircles,
+      cellSize.cellWidth,
+      cellSize.cellHeight,
+      side,
+      stimulusType
+    );
 
-        return {
-          segmentID: segmentID,
-          practiceTrialID: practiceTrialID,
-          trialID: trialID,
-          blockID: blockID,
-          numCircles: jsPsych.timelineVariable("numCircles"),
-          side: side,
-          stimulusType: stimulusType,
-          trialType: trialType,
-          recallOrder: recallOrder,
-          practice: practice,
-          isTestTrial: false
-        };
-      },
-      
-    background_color: "#FFFFFF",
-    choices: "NO_KEYS",
-    trial_duration: function () {
-        return jsPsych.timelineVariable("numCircles") * 100;
-    },
-    on_finish: function (data) {
-      // Access the stimuli array from the current trial
-      const stimuli_array = jsPsych.getCurrentTrial().stim_array;
-  
-      // Use the shared function to filter and map the stimuli
-      const filteredStimuli = filterAndMapStimuli(stimuli_array);
-    
-      // Attach the relevant stimuli data to the trial data
-      data.stimuliData = filteredStimuli;
-
-      // Reset the grid for the next trial
-      resetGrid(GRID, numColumns, numRows);
+    return generatedStimuli;
   },
 
-      post_trial_gap: function() {
-
-        const trialType = jsPsych.timelineVariable('trialType');
-      
-        if (trialType === "pure") {
-          return jsPsych.timelineVariable("post_trial_gap");
-        } else {
-          
-          return 1000; // I really hope im not making a logical mistake here, because in the slides it says 2000 for the first presentation and 1000 for the second, but no matter how i look at it that seems wrong.
-          // if (isFirstPresentation()) {
-          //   return 2000;
-          // } else {
-          //   return 1000;
-          // }
-        }
-    }  
-};
-
-function computeTrialVariables() {
-    let side;
-    let stimulusType;
+  data: function () {
+    const { side, stimulusType } = computeTrialVariables();
     const trialType = jsPsych.timelineVariable("trialType");
-  
-    if (trialType === "pure") {
-      side = jsPsych.timelineVariable("side");
-      stimulusType = jsPsych.timelineVariable("stimulusType");
+    const practice = jsPsych.timelineVariable("practice");
+    let recallOrder = null;
+
+    // Increments for practice vs. main trials
+    if (practice) {
+      if (trialType === "combined") {
+        practiceTrialID++;
+      } else if (trialType === "split" && isFirstPresentation()) {
+        practiceTrialID++;
+      }
     } else {
-      if (isFirstPresentation()) {
-        side = "left";
-        stimulusType = jsPsych.timelineVariable("firstStimulusType");
-      } else {
-        side = "right";
-        stimulusType = jsPsych.timelineVariable("secondStimulusType");
+      if (trialType === "combined") {
+        trialID++;
+      } else if (trialType === "split" && isFirstPresentation()) {
+        trialID++;
       }
     }
-  
-    return { side, stimulusType };
+
+    // Keep recallOrder for split block if used
+    if (trialType === "split") {
+      recallOrder = jsPsych.timelineVariable("recallOrder");
+    }
+
+    return {
+      segmentID: segmentID,
+      practiceTrialID: practiceTrialID,
+      trialID: trialID,
+      blockID: blockID,
+      numCircles: jsPsych.timelineVariable("numCircles"),
+      side: side,
+      stimulusType: stimulusType,
+      trialType: trialType,
+      recallOrder: recallOrder,
+      practice: practice,
+      isTestTrial: false,
+    };
+  },
+
+  background_color: "#FFFFFF",
+  choices: "NO_KEYS",
+
+  trial_duration: function () {
+    return jsPsych.timelineVariable("numCircles") * 100;
+  },
+
+  on_finish: function (data) {
+    // Filter and attach stimuli data
+    const stimuli_array = jsPsych.getCurrentTrial().stim_array;
+    const filteredStimuli = filterAndMapStimuli(stimuli_array);
+    data.stimuliData = filteredStimuli;
+
+    // Reset the grid for next trial
+    resetGrid(GRID, numColumns, numRows);
+  },
+
+  post_trial_gap: function () {
+    const trialType = jsPsych.timelineVariable("trialType");
+
+    if (trialType === "combined") {
+      // We rely on timelineVariable("post_trial_gap") for combined block
+      return jsPsych.timelineVariable("post_trial_gap");
+    } else {
+      // For the split block, default to 1000 ms
+      return 1000;
+    }
+  },
+};
+
+
+function computeTrialVariables() {
+  const trialType = jsPsych.timelineVariable("trialType");
+  let side;
+  let stimulusType;
+
+  if (trialType === "combined") {
+    // "combined" block => 3 or 6 circles, side often "both", or your chosen logic
+    side = jsPsych.timelineVariable("side"); // e.g., "both"
+    stimulusType = jsPsych.timelineVariable("stimulusType"); // "colored_circle"
+  } else {
+    // "split" block => left side if first presentation, right if second
+    if (isFirstPresentation()) {
+      side = "left";
+    } else {
+      side = "right";
+    }
+
+    stimulusType = jsPsych.timelineVariable("stimulusType");
   }
 
-// Determine if it's the first or second presentation
-// The modulus operation % finds the part of a number that is left over after subtracting 
-// the largest possible multiple of the divisor (2 in this case) from the number.
-// If the result is 0, it means the number is divisible by 2, i.e., it's an even number
+  return { side, stimulusType };
+}
+
 function isFirstPresentation() {
-    const mixedTrialCount = jsPsych.data.get().filter({ trialType: "mixed" }).count();
-    return mixedTrialCount % 2 === 0;
-  }
+  const splitTrialCount = jsPsych.data.get().filter({ trialType: "split" }).count();
+  // If count is even => it's the next "first" presentation
+  // If count is odd => it's the "second" presentation
+  return splitTrialCount % 2 === 0;
+}
