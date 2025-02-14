@@ -4,7 +4,7 @@ import { filterAndMapStimuli } from "../task-fun/filterStimuli";
 import { createColorWheel } from "../task-fun/createWheels"; 
 import { Stimulus, CircleStimulus, WheelStimulus } from "../task-fun/createStimuli";
 import { cloneDeep } from "lodash";
-import { trialID, practiceTrialID, segmentID, blockID } from "./displayStimuli";
+import { trialID, practiceTrialID } from "./displayStimuli";
 import { screenWidth } from "../task-fun/createGrid";
 
 type StimulusType = 'colored_circle'; 
@@ -196,10 +196,10 @@ export const test_trial = {
     }
 
     return {
-      segmentID: segmentID,
+      segmentID: fetchPreviousTrials(1)[0].segmentID,
       practiceTrialID: practiceTrialID,
       trialID: trialID,
-      blockID: blockID,
+      blockID: fetchPreviousTrials(1)[0].blockID,
       practice: practice,
       recallOrder: recallOrder,
       trialType: trialType,
@@ -250,9 +250,10 @@ export const test_trial = {
   },
 
   on_start: function(trial) {
-    // Merge new fields into trial.data
+    const currentStimulus = stateManager.getCurrentStimulusToIdentify();
+    // Wrap in array for consistent structure
     Object.assign(trial.data, {
-      stimulusToIdentify: stateManager.getCurrentStimulusToIdentify(),
+      stimulusToIdentify: currentStimulus ? [cloneDeep(currentStimulus)] : [],
       isTestTrial: true
     });
   },
@@ -299,6 +300,8 @@ export const test_trial = {
 
   // For demonstration, 100 ms gap on first test screen, 1000 ms otherwise
   post_trial_gap: function() {
+    console.log("Trial ID", trialID);
+    console.log("Practice Trial ID", practiceTrialID);
     return isFirstTestScreen() ? 100 : 1000;
   }
 };

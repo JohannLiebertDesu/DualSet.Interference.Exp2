@@ -17,8 +17,6 @@ const GRID = createGrid(numColumns, numRows);
 
 export let practiceTrialID = 0;
 export let trialID = 0;
-export let blockID = Math.ceil(trialID / BLOCK_SIZE);
-export let segmentID = Math.ceil(trialID / SEGMENT_SIZE);
 
 export const displayStimuli = {
   type: psychophysics,
@@ -46,6 +44,11 @@ export const displayStimuli = {
     const practice = jsPsych.timelineVariable("practice");
     let recallOrder = null;
 
+    // Keep recallOrder for split block if used
+    if (trialType === "split") {
+      recallOrder = jsPsych.timelineVariable("recallOrder");
+    }
+
     // Increments for practice vs. main trials
     if (practice) {
       if (trialType === "combined") {
@@ -61,17 +64,16 @@ export const displayStimuli = {
       }
     }
 
-    // Keep recallOrder for split block if used
-    if (trialType === "split") {
-      recallOrder = jsPsych.timelineVariable("recallOrder");
-    }
-
     console.log("is first presentation", isFirstPresentation());
+
+    console.log("Trial ID", trialID);
+    console.log("Practice Trial ID", practiceTrialID);
+    
     return {
-      segmentID: segmentID,
+      segmentID: Math.floor(trialID / SEGMENT_SIZE), // Corrected formula
       practiceTrialID: practiceTrialID,
       trialID: trialID,
-      blockID: blockID,
+      blockID: Math.floor(trialID / BLOCK_SIZE), // Corrected formula
       numCircles: jsPsych.timelineVariable("numCircles"),
       side: side,
       stimulusType: stimulusType,
