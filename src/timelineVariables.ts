@@ -100,11 +100,12 @@ interface ConditionParams {
 function createBreakScreen(
   breakType: 'postPractice' | 'betweenTrials' | 'betweenBlocks',
   loopValue: number | null,
-  blocksCreated: number | null
+  blocksCreated: number | null,
+  repetitions: number | null
 ): Trial {
   return {
     type: htmlButtonResponse,
-    stimulus: TEXT.blockBreak(breakType, loopValue, blocksCreated),
+    stimulus: TEXT.blockBreak(breakType, loopValue, blocksCreated, repetitions),
     choices: ['Continue'],
     post_trial_gap: gapAfterBreakScreens,
   };
@@ -206,8 +207,8 @@ function createCombinedStimuliProcedure(
     timeline_variables: timelineVariables,
     sample: {
       type: 'fixed-repetitions',
-      // Adjust the number of repetitions as you see fit
-      size: practice ? 3 : 8,
+      // Adjust the number of repetitions as you see fit, in this case its #timelineVariables (2) * sample size (10) * repetitions (2) = 40 (20 per timelineVariable)
+      size: practice ? 3 : 10,
     },
     procedureType: 'combined',
   };
@@ -227,7 +228,8 @@ function createSplitStimuliProcedure(
     timeline_variables: timelineVariables,
     sample: {
       type: 'fixed-repetitions',
-      size: practice ? 12 : 32,
+      // Adjust teh number of repetitions as you see fit, in this case its timelineVariables (1) * sample size (20) * repetitions (3) = 60 (20 per timelineVariable)
+      size: practice ? 6 : 20,
     },
     procedureType: 'split',
   };
@@ -272,7 +274,7 @@ function createBlock(
   block.push(practiceProcedure);
 
   // Break after practice
-  let postPracticeBreakTrial = createBreakScreen('postPractice', null, null);
+  let postPracticeBreakTrial = createBreakScreen('postPractice', null, null, null);
   block.push(postPracticeBreakTrial);
 
   // The main procedure repeated 'repetitions' times
@@ -281,7 +283,7 @@ function createBlock(
 
     // Add a short break after each repetition except the last
     if (i < repetitions - 1) {
-      let shortBreakTrial = createBreakScreen('betweenTrials', i + 1, blockNumber);
+      let shortBreakTrial = createBreakScreen('betweenTrials', i + 1, blockNumber, repetitions);
       block.push(shortBreakTrial);
     }
   }
@@ -327,7 +329,7 @@ export function assembleExperiment(params: ConditionParams): Experiment {
   const combinedBlock = createBlock(
     combinedMainProcedure,
     combinedPracticeProcedure,
-    3, // number of repetitions for the combined block
+    2, // number of repetitions for the combined block
     recallOrderInSplit,
     trialOrder
   );
@@ -341,7 +343,7 @@ export function assembleExperiment(params: ConditionParams): Experiment {
   );
 
   // 4) Large break between blocks
-  const largeBreakTrial = createBreakScreen('betweenBlocks', null, null);
+  const largeBreakTrial = createBreakScreen('betweenBlocks', null, null, null);
 
   // 5) Final timeline depends on whether Combined or Split is first
   let experimentTimeline: (Procedure | Trial)[];

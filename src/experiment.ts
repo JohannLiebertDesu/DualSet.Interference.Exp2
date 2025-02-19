@@ -57,36 +57,6 @@ export async function run({
     ]
   };
 
-
-  /************************************** Prepare **************************************/
-
-
-// Make sure the code executing this is in an async function/context
-const subject_id = await initializeAndAssignSubjectID();
-
-// Calculate the condition index based on participant ID
-const conditionIndex = subject_id % conditions.length; // In our case, if for example 13 % 8, then conditionIndex is 5, which selects the sixth position in the array (since we start at 0)
-const condition = conditions[conditionIndex]; // From the condition array, position 5 would get selected as the relevant condition for this participant
-
-// The variable "condition" could then look like this:
-// {
-//   name: "ColoredFirst_PureFirst_ABBA",
-//   params: {
-//     firstStimulusInMixed: StimulusType.ColoredCircle,
-//     trialOrder: TrialOrder.PureFirst,
-//     recallOrderInMixed: RecallOrderInMixed.ABBA,
-//   },
-// }
-
-// We use the selected condition, and its contained parameters to assemble the experiment.
-const participantExperiment = assembleExperiment(condition.params);
-
-// Now you can safely add properties to the data since subject_id and the timeline variables are ready
-jsPsych.data.addProperties({
-  subject: subject_id,
-  blockOrder: condition.params.trialOrder,
-});
-
   /************************************** Procedure **************************************/
 
   // Push all the screen slides into timeline
@@ -97,10 +67,38 @@ jsPsych.data.addProperties({
   timeline.push(notice_screen);
   timeline.push(browser_screen);
   timeline.push(fullMode_screen);
-  timeline.push(instructionSlidesConfig);
-  timeline.push(participantExperiment);
-  timeline.push(survey_screen);
-  timeline.push(debrief_screen);
-  timeline.push(closeFullScreen);
-  await jsPsych.run(timeline);
-}
+
+  // Make sure the code executing this is in an async function/context
+  const subject_id = await initializeAndAssignSubjectID();
+
+  // Calculate the condition index based on participant ID
+  const conditionIndex = subject_id % conditions.length; // In our case, if for example 13 % 8, then conditionIndex is 5, which selects the sixth position in the array (since we start at 0)
+  const condition = conditions[conditionIndex]; // From the condition array, position 5 would get selected as the relevant condition for this participant
+
+  // The variable "condition" could then look like this:
+  // {
+  //   name: "ColoredFirst_PureFirst_ABBA",
+  //   params: {
+  //     firstStimulusInMixed: StimulusType.ColoredCircle,
+  //     trialOrder: TrialOrder.PureFirst,
+  //     recallOrderInMixed: RecallOrderInMixed.ABBA,
+  //   },
+  // }
+
+  // We use the selected condition, and its contained parameters to assemble the experiment.
+  const participantExperiment = assembleExperiment(condition.params);
+
+  // Now you can safely add properties to the data since subject_id and the timeline variables are ready
+  jsPsych.data.addProperties({
+    subject: subject_id,
+    blockOrder: condition.params.trialOrder,
+  });
+
+  console.log("subject_id", subject_id);
+    timeline.push(instructionSlidesConfig);
+    timeline.push(participantExperiment);
+    timeline.push(survey_screen);
+    timeline.push(debrief_screen);
+    timeline.push(closeFullScreen);
+    await jsPsych.run(timeline);
+  }

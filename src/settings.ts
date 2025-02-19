@@ -12,20 +12,14 @@ setCSS();
 
 export const expInfo = {
   // settings for the experiment
-  TITLE: "DualSet.Interference.Exp1",
+  TITLE: "DualSet.Interference.Exp2",
   LANG: "en", // the default language of the experiment
 
   // design of the experiment
   DESIGN: {
-    nTRIALS: 96, // number of experiment trials for each condition
     nBLOCKS: 2, // number of blocks
   },
 
-  // settings for each trial
-  TIMING: {
-    START: 10 * 1000, // time for the countdown before a new trial starts
-    BREAK: 30, // break duration in seconds
-  },
 
   // when using Prolific, you can set customized completion codes for different situations
   // e.g., when participants complete the experiment, or when they fail the attention check

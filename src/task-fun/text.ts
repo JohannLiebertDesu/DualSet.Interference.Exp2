@@ -21,13 +21,14 @@ export const TEXT = {
   blockBreak: function (
     breakType: 'betweenTrials' | 'postPractice' | 'betweenBlocks',
     loopValue: number | null,
-    blocksCreated: number | null
+    blocksCreated: number | null,
+    repetitions: number | null
   ) {
     if (breakType === 'betweenTrials') {
       return `<div class='main'>
         <h1 class='title'>Take a break</h1>
         <p class='fb-text'>
-          Good job! You have completed ${loopValue}/3 of the trials, 
+          Good job! You have completed ${loopValue}/${repetitions} of the trials, 
           within block ${blocksCreated} out of ${expInfo.DESIGN.nBLOCKS} total blocks. 
           Take a few seconds to rest before you move on with more trials. 
           When you feel ready, click on the button to continue.
