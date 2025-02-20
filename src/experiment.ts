@@ -53,7 +53,6 @@ export async function run({
       "assets/instructionImages/Slide3.gif",
       "assets/instructionImages/Slide4.gif",
       "assets/instructionImages/Slide5.gif",
-      "assets/instructionImages/Slide6.gif"
     ]
   };
 

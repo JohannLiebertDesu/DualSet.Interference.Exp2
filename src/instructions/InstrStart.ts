@@ -7,8 +7,7 @@ const instructionSlides = [
   '<div class="custom-instruction-slide"><img src="assets/instructionImages/Slide2.gif" class="instruction-image"></div>',
   '<div class="custom-instruction-slide"><img src="assets/instructionImages/Slide3.gif" class="instruction-image"></div>',
   '<div class="custom-instruction-slide"><img src="assets/instructionImages/Slide4.gif" class="instruction-image"></div>',
-  '<div class="custom-instruction-slide"><img src="assets/instructionImages/Slide5.gif" class="instruction-image"></div>',
-  '<div class="custom-instruction-slide"><img src="assets/instructionImages/Slide6.gif" class="instruction-image"></div>'
+  '<div class="custom-instruction-slide"><img src="assets/instructionImages/Slide5.gif" class="instruction-image"></div>'
 ];
 
 
