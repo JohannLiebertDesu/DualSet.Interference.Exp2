@@ -9,11 +9,13 @@ import { screenWidth } from "../task-fun/createGrid";
 
 type StimulusType = 'colored_circle'; 
 
+type Side = 'left' | 'right';
+
 const stateManager = (function() {
     // Private state variables
     let filteredData: Stimulus[] = [];
     let currentStimulusToIdentify: CircleStimulus | null = null;
-    let selectedStimulusTypeForRandomOrder: StimulusType | null = null;
+    let selectedSideForRandomOrder: Side | null = null;
 
     return {
         getFilteredData(): Stimulus[] {
@@ -28,19 +30,20 @@ const stateManager = (function() {
         setCurrentStimulusToIdentify(stimulus: CircleStimulus | null): void {
             currentStimulusToIdentify = stimulus;
         },
-        getSelectedStimulusTypeForRandomOrder(): StimulusType | null {
-            return selectedStimulusTypeForRandomOrder;
+        getSelectedSideForRandomOrder(): Side | null {
+            return selectedSideForRandomOrder;
         },
-        setSelectedStimulusTypeForRandomOrder(type: StimulusType | null): void {
-            selectedStimulusTypeForRandomOrder = type;
+        setSelectedSideForRandomOrder(side: Side | null): void {
+            selectedSideForRandomOrder = side;
         },
         resetState(): void {
             filteredData = [];
             currentStimulusToIdentify = null;
-            selectedStimulusTypeForRandomOrder = null;
+            selectedSideForRandomOrder = null;
         }
     };
 })();
+
 
 // Fetch previous trials based on the number and optional stimulusType
 function fetchPreviousTrials(numTrials: number, stimulusType?: StimulusType | null) {
@@ -69,7 +72,7 @@ function isWheelStimulus(stim: Stimulus): stim is WheelStimulus {
  * We keep logic for 'split' block that might use ABBA vs random,
  * but it simply returns colored circles, since there's no second stimulus type.
  */
-function selectStimuli(stimulusType: StimulusType): Stimulus[] {
+function selectStimuli(): Stimulus[] {
     const trialType = jsPsych.timelineVariable('trialType');
     // Because 'split' may still have recallOrder = 'ABBA' or 'random'
     let recallOrder: 'ABBA' | 'random' | undefined;
@@ -79,7 +82,9 @@ function selectStimuli(stimulusType: StimulusType): Stimulus[] {
     }
 
     // Obtain the relevant stimuli data:
-    let stimuliData: Stimulus[] = getStimuliData(trialType, recallOrder, stimulusType);
+    let stimuliData: Stimulus[] = getStimuliData(trialType, recallOrder);
+    console.log("stimuli DATA:", stimuliData);
+    console.log("This participant is part of the followin recall Order group:", recallOrder);
 
     if (!stimuliData || stimuliData.length === 0) {
         throw new Error("No stimuli available.");
@@ -97,7 +102,6 @@ function selectStimuli(stimulusType: StimulusType): Stimulus[] {
 function getStimuliData(
     trialType: 'combined' | 'split',
     recallOrder: 'ABBA' | 'random' | undefined,
-    stimulusType: StimulusType
 ): Stimulus[] {
     let stimuliData: Stimulus[] = [];
 
@@ -115,10 +119,25 @@ function getStimuliData(
             const previousTrial = fetchPreviousTrials(indexOffset)[0];
             stimuliData = cloneDeep(previousTrial.stimuliData);
         } else if (recallOrder === 'random') {
-            const numTrials = isFirstTestScreen() ? 2 : 3;
-            const recentTrials = fetchPreviousTrials(numTrials, stimulusType);
-            const relevantTrial = recentTrials.find(trial => trial.stimulusType === stimulusType);
-            stimuliData = relevantTrial ? cloneDeep(relevantTrial.stimuliData) : [];
+          let side;
+          if (isFirstTestScreen()) {
+              // Randomly pick a side on the first display screen
+              side = Math.random() < 0.5 ? 'left' : 'right';
+              stateManager.setSelectedSideForRandomOrder(side);
+          } else {
+              // On subsequent screens, choose the opposite side of the one stored earlier
+              const previousSide = stateManager.getSelectedSideForRandomOrder();
+              side = previousSide === 'left' ? 'right' : 'left';
+          }
+          // Set index offset based on side and whether it's the first test screen
+          let indexOffset
+          if (isFirstTestScreen()) {
+              indexOffset = side === 'left' ? 2 : 1;
+          } else {
+              indexOffset = side === 'left' ? 3 : 2;
+          }
+          const previousTrial = fetchPreviousTrials(indexOffset)[0];
+          stimuliData = cloneDeep(previousTrial.stimuliData);
         }
     } else {
         throw new Error(`Unknown trial type: ${trialType}`);
@@ -163,7 +182,7 @@ export const test_trial = {
     let stimulusType: StimulusType = 'colored_circle';
 
     // Get the selected stimuli (just colored circles)
-    const selectedStimuli = selectStimuli(stimulusType);
+    const selectedStimuli = selectStimuli();
 
     // We still create a wheel. Check the circle’s radius:
     const circleStim = selectedStimuli.find(isCircleStimulus);

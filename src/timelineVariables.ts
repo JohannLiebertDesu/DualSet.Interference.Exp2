@@ -208,7 +208,7 @@ function createCombinedStimuliProcedure(
     sample: {
       type: 'fixed-repetitions',
       // Adjust the number of repetitions as you see fit, in this case its #timelineVariables (2) * sample size (16) * repetitions (3) = 96 (32 per timelineVariable)
-      size: practice ? 3 : 16,
+      size: practice ? 3 : 3,
     },
     procedureType: 'combined',
   };
@@ -229,7 +229,7 @@ function createSplitStimuliProcedure(
     sample: {
       type: 'fixed-repetitions',
       // Adjust the number of repetitions as you see fit, in this case its timelineVariables (1) * sample size (32) * repetitions (3) = 96 (32 per timelineVariable)
-      size: practice ? 6 : 32,
+      size: practice ? 6 : 6,
     },
     procedureType: 'split',
   };
@@ -329,7 +329,7 @@ export function assembleExperiment(params: ConditionParams): Experiment {
   const combinedBlock = createBlock(
     combinedMainProcedure,
     combinedPracticeProcedure,
-    3, // number of repetitions for the combined block
+    1, // number of repetitions for the combined block
     recallOrderInSplit,
     trialOrder
   );
@@ -337,7 +337,7 @@ export function assembleExperiment(params: ConditionParams): Experiment {
   const splitBlock = createBlock(
     splitMainProcedure,
     splitPracticeProcedure,
-    3, // number of repetitions for the split block
+    1, // number of repetitions for the split block
     recallOrderInSplit,
     trialOrder
   );
