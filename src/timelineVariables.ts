@@ -208,7 +208,7 @@ function createCombinedStimuliProcedure(
     sample: {
       type: 'fixed-repetitions',
       // Adjust the number of repetitions as you see fit, in this case its #timelineVariables (2) * sample size (16) * repetitions (3) = 96 (32 per timelineVariable)
-      size: practice ? 1 : 2,
+      size: practice ? 6 : 16,
     },
     procedureType: 'combined',
   };
@@ -229,7 +229,7 @@ function createSplitStimuliProcedure(
     sample: {
       type: 'fixed-repetitions',
       // Adjust the number of repetitions as you see fit, in this case its timelineVariables (1) * sample size (32) * repetitions (3) = 96 (32 per timelineVariable)
-      size: practice ? 2 : 4,
+      size: practice ? 12 : 32,
     },
     procedureType: 'split',
   };
