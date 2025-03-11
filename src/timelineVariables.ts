@@ -329,7 +329,7 @@ export function assembleExperiment(params: ConditionParams): Experiment {
   const combinedBlock = createBlock(
     combinedMainProcedure,
     combinedPracticeProcedure,
-    1, // number of repetitions for the combined block
+    3, // number of repetitions for the combined block
     recallOrderInSplit,
     trialOrder
   );
@@ -337,7 +337,7 @@ export function assembleExperiment(params: ConditionParams): Experiment {
   const splitBlock = createBlock(
     splitMainProcedure,
     splitPracticeProcedure,
-    1, // number of repetitions for the split block
+    3, // number of repetitions for the split block
     recallOrderInSplit,
     trialOrder
   );
