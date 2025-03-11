@@ -208,7 +208,7 @@ function createCombinedStimuliProcedure(
     sample: {
       type: 'fixed-repetitions',
       // Adjust the number of repetitions as you see fit, in this case its #timelineVariables (2) * sample size (16) * repetitions (3) = 96 (32 per timelineVariable)
-      size: practice ? 3 : 3,
+      size: practice ? 1 : 2,
     },
     procedureType: 'combined',
   };
@@ -229,7 +229,7 @@ function createSplitStimuliProcedure(
     sample: {
       type: 'fixed-repetitions',
       // Adjust the number of repetitions as you see fit, in this case its timelineVariables (1) * sample size (32) * repetitions (3) = 96 (32 per timelineVariable)
-      size: practice ? 6 : 6,
+      size: practice ? 2 : 4,
     },
     procedureType: 'split',
   };
@@ -253,7 +253,7 @@ function createBlock(
   const block: (Procedure | Trial)[] = [];
 
   // Figure out if this is the first or second block
-  // (BlockNr = 1 for the block that ma tches trialOrder, else 2)
+  // (BlockNr = 1 for the block that matches trialOrder, else 2)
   // Because we have only two block types: 'combined' and 'split'.
   const blockNumber =
     (trialOrder === TrialOrder.CombinedFirst && mainProcedure.procedureType === 'combined') ||

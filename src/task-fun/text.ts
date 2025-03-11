@@ -325,7 +325,7 @@ export const SURVEY_INFO = {
 
   STRATEGY_QUES: {
     cn: "您在实验中是否采用了某些策略来帮助记忆？",
-    en: "Did you use any strategies to help you remember the colors or orientations?",
+    en: "Did you use any strategies to help you remember the colors?",
   },
 
   ATTENTION_QUES: {
