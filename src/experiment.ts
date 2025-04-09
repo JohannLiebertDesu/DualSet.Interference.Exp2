@@ -27,6 +27,7 @@ import { initializeAndAssignSubjectID } from "./task-fun/participantID";
 import { survey_screen } from "./ending/questionnaire";
 import { debrief_screen } from "./ending/debriefing";
 import { instructionSlidesConfig } from "./instructions/InstrStart";
+import jsPsychCallFunction from '@jspsych/plugin-call-function';
 
 /**
  * This function will be executed by jsPsych Builder and is expected to run the jsPsych experiment
@@ -87,10 +88,17 @@ export async function run({
   // We use the selected condition, and its contained parameters to assemble the experiment.
   const participantExperiment = assembleExperiment(condition.params);
 
-  // Now you can safely add properties to the data since subject_id and the timeline variables are ready
-  jsPsych.data.addProperties({
-    subject: subject_id,
-    blockOrder: condition.params.trialOrder,
+  // Make sure the code executing this is in an async way, as the jatos is too slow to have the function execute all at once.
+  // The reason why i assign a participant id so late is simply because we don't need it before that and otherwise participants might join the experiment, get an id assigned and then not actually complete anything.
+  timeline.push({
+    type: jsPsychCallFunction,
+    async func() {
+      const subject_id = await initializeAndAssignSubjectID();
+      jsPsych.data.addProperties({
+        subject: subject_id,
+        experiment: "experiment2"
+      });
+    },
   });
 
   console.log("subject_id", subject_id);
